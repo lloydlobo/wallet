@@ -1,0 +1,61 @@
+.App {
+  text-align: center;
+}
+
+.logo {
+  animation: logo-spin infinite 20s linear;
+  height: 40vmin;
+  pointer-events: none;
+}
+
+.header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.link {
+  color: #b318f0;
+}
+
+.items {
+  display: grid;
+  gap: 1rem;
+}
+
+.item .avatar {
+  border-radius: 1000px;
+  border: 1px solid #ccc;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: #cccccc30;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  width: 70%;
+  max-width: 600px;
+  margin-inline: auto;
+  justify-items: start;
+  text-align: start;
+  border-radius: 5px;
+  border: 1px solid #cccccc50;
+  padding: 0.5rem 1rem;
+  background-color: #cccccc30;
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
