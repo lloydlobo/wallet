@@ -9,6 +9,53 @@
   <title>Solid App</title>
   <!-- <link rel="stylesheet" href="/src/assets/pico-1.5.10//css/pico.min.css"> -->
   <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css"> -->
+  <script>
+
+    <!-- Check and apply theme here to avoid FOUC (Flash of Unstyled Content) -->
+    /**
+     * Checks whether the dark theme is saved in localStorage.
+     * @returns {boolean}
+     */
+    function isDarkThemeSaved() {
+      return localStorage.theme === 'dark';
+    }
+    /**
+     * Checks whether the theme key is present in localStorage.
+     * @returns {boolean}
+     */
+    function isThemeKeyInStorage() {
+      return 'theme' in localStorage;
+    }
+    /**
+     * Checks whether the user prefers the dark color scheme.
+     * @returns {boolean}
+     */
+    function isUserPreferedSchemeDark() {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    /**
+     * Updates the document classList based on whether the dark theme is saved, the theme key is in storage,
+     * and the user prefers the dark color scheme.
+     */
+    function updateDocumentClassList() {
+      const documentClasslist = document.documentElement.classList;
+      const THEME_CLASS = 'dark';
+      const shouldAddThemeClass =
+        isDarkThemeSaved() || (!isThemeKeyInStorage() && isUserPreferedSchemeDark());
+      shouldAddThemeClass
+        ? documentClasslist.add(THEME_CLASS)
+        : documentClasslist.remove(THEME_CLASS);
+    }
+    updateDocumentClassList();
+  //  const documentClasslist = document.documentElement.classList;
+  //  const THEME_CLASS = 'dark';
+
+  //  if (localStorage.theme === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  //    documentClasslist.add(THEME_CLASS);
+  //  } else {
+  //    documentClasslist.remove(THEME_CLASS);
+  //  }
+  </script>
 </head>
 
 <body>

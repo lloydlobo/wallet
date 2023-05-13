@@ -1,10 +1,13 @@
-import { Component, createEffect, createSignal, batch, For, Show } from 'solid-js';
+import { Component, createEffect, createSignal, batch, For, Show, JSXElement } from 'solid-js';
 import { ListItem } from './components/ListItem';
 import { supabase } from './lib/supabase-client';
 import type { Expense } from './lib/types';
 const DB_NAME_EXPENSES = 'expenses';
 import { createLocalStore, removeIndex } from "./lib/store";
 import styles from './App.module.css';
+import logo from './logo.svg'
+import { JSX } from "solid-js/jsx-runtime";
+import { ThemeToggle } from './components/ThemeToggle';
 
 async function getDB(): Promise<Expense[] | null | undefined> {
   try {
@@ -51,12 +54,28 @@ const App: Component = () => {
     });
   };
   return (
-    <div>
-      <div class="container max-w-lg md:max-w-2xl space-y-8 mx-auto py-8">
-        <a class={styles.link} href="/" >Refresh</a>
+    <div class="@container h-screen">
+      <div class="container max-w-lg @md:max-w-3xl space-y-8 mx-auto py-8!">
+        <header>
+          <div class="flex justify-between">
+            <div class="logo">wallet</div>
+            <div class="nav-end grid gap-4 grid-flow-col">
+              <a class={styles.link} href="/" >Refresh</a>
+              <ThemeToggle />
+            </div>
+          </div>
+        </header>
 
-        <div class="[&>section]:m-4 scroll-m-8 grid max-h-[88vh] min-h-[88vh] overflow-y-scroll [&>section]:rounded-3xl space-y-6 rounded-3xl bg-slate-100 dark:bg-slate-900!">
-          <section class="bg-white p-8 scroll-m-8">
+        <div
+          // TODO: Style the overflowing vertical scroll bar.
+          style={{
+            "--tw-scrollbar-width": "10px",
+            "--tw-scrollbar-color": "black",
+            "--tw-scrollbar-track-color": "white",
+            "--tw-scrollbar-thumb-color": "black",
+          }}
+          class=" grid max-h-[88vh] mx-0 min-h-[88vh] overflow-y-auto space-y-6 rounded-3xl bg-slate-100 dark:bg-slate-900">
+          <section class="bg-background m-4 p-8  rounded-3xl">
             <div class="grid gap-2">
               <For each={todos}>
                 {(todo, i) => (
@@ -67,14 +86,15 @@ const App: Component = () => {
                       onChange={(e) => setTodos(i(), "done", e.currentTarget.checked)}
                       data-tooltip={`Consolidate ${todo.title}`}
                       data-placement="right"
+                      class="form-checkbox  bg-background rounded"
                     />
                     <input
                       type="text"
                       value={todo.title}
                       onChange={(e) => setTodos(i(), "title", e.currentTarget.value)}
-                      class="w-full"
+                      class="form-input bg-background w-full "
                     />
-                    <button class="outline! warning! secondary" onClick={() => setTodos((t) => removeIndex(t, i()))}
+                    <button class="" onClick={() => setTodos((t) => removeIndex(t, i()))}
                       data-tooltip={`Delete ${todo.title}`}
                     >
                       x
@@ -85,7 +105,7 @@ const App: Component = () => {
             </div>
           </section>
 
-          <section class="bg-white p-8">
+          <section class="bg-background m-4 p-8 scroll-m-8 rounded-3xl">
             {/* figure acts as a container to make any content scrollable horizontally. */}
             <Show when={expenses() !== null}>
               <div>
@@ -97,14 +117,14 @@ const App: Component = () => {
           </section>
 
 
-          <section class="place-self-end m-0 sticky bottom-0 bg-slate-100 rounded-none pb-8  py-4 px-12 left-0 right-0 w-full">
+          <section class="place-self-end m-0 sticky bottom-0 bg-slate-100 dark:bg-slate-900 rounded-none pb-8  py-4 mx-0 px-12 left-0 right-0 w-full">
             <form onSubmit={addTodo} class="flex h-fit w-full gap-4 mx-auto">
               <input
                 placeholder="enter todo and click +"
                 required
                 value={newTitle()}
                 onInput={(e) => setTitle(e.currentTarget.value)}
-                class="border border-slate-300 p-4 rounded-[50px] w-full max-w-xl"
+                class="border p-4 rounded-[50px] bg-background w-full max-w-xl"
               />
               <button class="" type="submit">+</button>
             </form>
@@ -117,3 +137,26 @@ const App: Component = () => {
 
 export default App;
 
+function Card(): JSX.Element {
+  return (
+    <div class="w-full min-h-[40%] items-center gap-2 m-6 bg-slate-100 rounded-xl p-6 @xl:flex">
+      <div class="bg-slate-300 @xl:w-1/4 @xl:h-full aspect-video mb-4 w-full object-cover" />
+      {/*<img src={logo} alt="solid" class="@xl:w-1/4" />*/}
+      <div >
+        <h2 class="text-xl font-bold">Lorem</h2>
+        <p>Lorem ipsum dolor sit amet, qui minim labore adipisicing minim sint cillum sint consectetur cupidatat.</p>
+        <button type='button'>Read more</button>
+      </div>
+    </div>
+  )
+}
+
+function Cards(): JSX.Element {
+  return (
+    <section class="m-8 @container grid grid-cols-2 w-full mx-auto max-w-4xl gap-12 ">
+      <Card />
+      <Card />
+      <Card />
+    </section>
+  )
+}
