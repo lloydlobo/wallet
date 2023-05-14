@@ -4,6 +4,10 @@
 @tailwind components;
 @tailwind utilities;
 
+*,*::before,*::after{
+  /* @apply outline-red-50/30 dark:outline-red-950/30 outline; */
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -101,7 +105,33 @@ code {
     /* @apply font-sans; */
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-}
+
+  input,textarea {
+    @apply bg-background dark:bg-background;
+  }
+
+  form input {
+      @apply form-input;
+  }
+
+/* [data-theme="dark"]  */
+/* if dark mode is toggled and "dark" class is added to <html> */
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+    @apply invert;
+  }
+
+
+  /* Add a custom icon */
+  input[type="date"]::before {
+    content: "\f073"; /* Replace with your desired icon's Unicode */
+    font-family: FontAwesome; /* Replace with the font family of your custom icon */
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    color: #999;
+  }
+  }
 
 @layer utilities {
   .step {
@@ -127,3 +157,4 @@ body[style*="pointer-events: none"] .overflow-x-auto {
     @apply px-4;
   }
 }
+

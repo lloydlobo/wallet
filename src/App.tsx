@@ -1,18 +1,20 @@
-import { Component, createEffect, createSignal, batch, For, Show, JSXElement } from 'solid-js';
+import { batch, Component, createEffect, createResource, createSignal, For, JSXElement, lazy, Show } from 'solid-js';
+import { JSX } from "solid-js/jsx-runtime";
+import styles from './App.module.css';
 import { ListItem } from './components/ListItem';
+import { ThemeToggle } from './components/ThemeToggle';
+import { createLocalStore, removeIndex } from "./lib/store";
 import { supabase } from './lib/supabase-client';
 import type { Expense } from './lib/types';
-const DB_NAME_EXPENSES = 'expenses';
-import { createLocalStore, removeIndex } from "./lib/store";
-import styles from './App.module.css';
-import logo from './logo.svg'
-import { JSX } from "solid-js/jsx-runtime";
-import { ThemeToggle } from './components/ThemeToggle';
+import { Database, TDatabaseExpense } from './lib/types-supabase';
+import logo from './logo.svg';
 
-async function getDB(): Promise<Expense[] | null | undefined> {
+const DB_NAME_EXPENSES = 'expenses';
+
+async function getDB(): Promise<TDatabaseExpense[] | null | undefined> {
   try {
     const { data } = await supabase.from(DB_NAME_EXPENSES).select();
-    return data as Expense[];
+    return data as TDatabaseExpense[];
   } catch (err) {
     console.error(err);
   }
@@ -31,15 +33,24 @@ async function insertDB() {
 }
 
 type TodoItem = { title: string; done: boolean };
+// fetcher: ResourceFetcher<true, unknown, unknown>, options: InitializedResourceOptions<unknown, true>
+const fetchUser = async (id: unknown) =>
+  (await fetch(`https://swapi.dev/api/people/${id}/`)).json();
 const App: Component = () => {
-  const [expenses, setExpenses] = createSignal<Expense[] | null>(null);
+  const [userId, setUserId] = createSignal();
+  const [expenses, setExpenses] = createSignal<TDatabaseExpense[] | null>(null);
+  const [user] = createResource(userId, fetchUser);
 
-  // TODO: Effects are meant primarily for side effects that read but don't write to the reactive system: it's best to avoid setting signals in effects, which without care can cause additional rendering or even infinite effect loops. Instead, prefer using createMemo to compute new values that depend on other reactive values, so the reactive system knows what depends on what, and can optimize accordingly.
+  // TODO: Effects are meant primarily for side effects that read but don't write to the reactive system
+  // : it's best to avoid setting signals in effects, which without care can cause additional rendering
+  // or even infinite effect loops. Instead, prefer using createMemo to compute new values that depend
+  // on other reactive values, so the reactive system knows what depends on what, and can optimize accordingly
   createEffect(async () => {
     const data = await getDB();
     if (!data) return;
     setExpenses(data);
   });
+
   const [newTitle, setTitle] = createSignal("");
   const [todos, setTodos] = createLocalStore<TodoItem[]>("todos", []);
 
@@ -53,10 +64,25 @@ const App: Component = () => {
       setTitle("");
     });
   };
+
+  const sortByDate = (items: TDatabaseExpense[] | null) => {
+    const data = items;
+    if (data) {
+      data.sort((a, b) => {
+        // TODO: add another field for business logic i.e. the transaction_date
+        const aTimestampz = new Date(a.transaction_date ?? a.created_at ?? a.updated_at).getTime();
+        const bTimestampz = new Date(b.transaction_date ?? b.created_at ?? b.updated_at).getTime();
+        console.log({ date_a: aTimestampz, date_b: bTimestampz });
+        return -1 * (aTimestampz - bTimestampz); // latest at top.
+      });
+    }
+    return data;
+  }
+
   return (
     <div class="@container h-screen">
-      <div class="container max-w-lg @md:max-w-3xl space-y-8 mx-auto py-8!">
-        <header>
+      <div class="container max-w-lg @md:max-w-3xl space-y-2 mx-auto py-8!">
+        <header class="py-6">
           <div class="flex justify-between">
             <div class="logo">wallet</div>
             <div class="nav-end grid gap-4 grid-flow-col">
@@ -66,72 +92,82 @@ const App: Component = () => {
           </div>
         </header>
 
-        <div
-          // TODO: Style the overflowing vertical scroll bar.
-          style={{
-            "--tw-scrollbar-width": "10px",
-            "--tw-scrollbar-color": "black",
-            "--tw-scrollbar-track-color": "white",
-            "--tw-scrollbar-thumb-color": "black",
-          }}
-          class=" grid max-h-[88vh] mx-0 min-h-[88vh] overflow-y-auto space-y-6 rounded-3xl bg-slate-100 dark:bg-slate-900">
-          <section class="bg-background m-4 p-8  rounded-3xl">
-            <div class="grid gap-2">
-              <For each={todos}>
-                {(todo, i) => (
-                  <div class="flex gap-4 w-full mx-auto items-center">
-                    <input
-                      type="checkbox"
-                      checked={todo.done}
-                      onChange={(e) => setTodos(i(), "done", e.currentTarget.checked)}
-                      data-tooltip={`Consolidate ${todo.title}`}
-                      data-placement="right"
-                      class="form-checkbox  bg-background rounded"
-                    />
-                    <input
-                      type="text"
-                      value={todo.title}
-                      onChange={(e) => setTodos(i(), "title", e.currentTarget.value)}
-                      class="form-input bg-background w-full "
-                    />
-                    <button class="" onClick={() => setTodos((t) => removeIndex(t, i()))}
-                      data-tooltip={`Delete ${todo.title}`}
-                    >
-                      x
-                    </button>
-                  </div>
-                )}
-              </For>
-            </div>
-          </section>
+        <div class="rounded-3xl overflow-y-clip">
+          <div
+            class={`${styles.workspace} workspace bg-slate-100 dark:bg-slate-900`}>
+            <section>
+              {/* figure acts as a container to make any content scrollable horizontally. */}
+              <Show when={expenses() !== null}>
+                <div class="grid gap-2">
+                  <For each={sortByDate(expenses())}>
+                    {item => <ListItem item={item} />}
+                  </For>
+                </div>
+              </Show>
+            </section>
 
-          <section class="bg-background m-4 p-8 scroll-m-8 rounded-3xl">
-            {/* figure acts as a container to make any content scrollable horizontally. */}
-            <Show when={expenses() !== null}>
-              <div>
-                <For each={expenses()}>
-                  {item => <ListItem item={item} />}
+
+            <section>
+              <div class="grid gap-2">
+                <For each={todos}>
+                  {(todo, i) => (
+                    <div class="flex gap-4 w-full mx-auto items-center">
+                      <input
+                        type="checkbox"
+                        checked={todo.done}
+                        onChange={(e) => setTodos(i(), "done", e.currentTarget.checked)}
+                        data-tooltip={`Consolidate ${todo.title}`}
+                        data-placement="right"
+                        class="form-checkbox  bg-background rounded"
+                      />
+                      <input
+                        type="text"
+                        value={todo.title}
+                        onChange={(e) => setTodos(i(), "title", e.currentTarget.value)}
+                        class="form-input bg-background w-full "
+                      />
+                      <button class="" onClick={() => setTodos((t) => removeIndex(t, i()))}
+                        data-tooltip={`Delete ${todo.title}`}
+                      >
+                        x
+                      </button>
+                    </div>
+                  )}
                 </For>
               </div>
-            </Show>
-          </section>
+            </section>
 
-
-          <section class="place-self-end m-0 sticky bottom-0 bg-slate-100 dark:bg-slate-900 rounded-none pb-8  py-4 mx-0 px-12 left-0 right-0 w-full">
-            <form onSubmit={addTodo} class="flex h-fit w-full gap-4 mx-auto">
+            <section class="hidden">
               <input
-                placeholder="enter todo and click +"
-                required
-                value={newTitle()}
-                onInput={(e) => setTitle(e.currentTarget.value)}
-                class="border p-4 rounded-[50px] bg-background w-full max-w-xl"
+                type="number"
+                min="1"
+                placeholder="Enter Numeric Id"
+                onInput={(e) => setUserId(e.currentTarget.value)}
               />
-              <button class="" type="submit">+</button>
-            </form>
-          </section>
+              <span>{user.loading && "Loading..."}</span>
+              <div>
+                <pre>{JSON.stringify(user(), null, 2)}</pre>
+              </div>
+            </section>
+
+            <div
+              class="place-self-end m-0 sticky bottom-0 bg-slate-100 dark:bg-slate-900 pb-8 py-4 mx-0 px-12 left-0 right-0 w-full"
+            >
+              <form onSubmit={addTodo} class="flex h-fit w-full gap-4 mx-auto">
+                <input
+                  placeholder="enter todo and click +"
+                  required
+                  value={newTitle()}
+                  onInput={(e) => setTitle(e.currentTarget.value)}
+                  class="border p-4 rounded-[50px] bg-background w-full max-w-xl"
+                />
+                <button class="" type="submit">+</button>
+              </form>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
