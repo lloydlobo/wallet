@@ -132,7 +132,7 @@ const App: Component = () => {
 
   return (
     <div class="@container h-screen">
-      <div class="container max-w-lg @md:max-w-3xl space-y-2 mx-auto py-8!">
+      <div class="container  max-w-lg @md:max-w-3xl space-y-2 mx-auto py-8!">
         <header class="py-6">
           <div class="flex justify-between">
             <div class="logo">wallet</div>
@@ -143,53 +143,27 @@ const App: Component = () => {
           </div>
         </header>
 
-        <Show when={groupedState()}>
-          <div class="group grid gap-2">
-            <For each={groupedState() as unknown[] as [string, TDatabaseExpense[]]}>
-              {items => <div class="bg-card rounded-xl border p-4">
-                <h2 class="text-xl">{items[0] as string}</h2>
-                <div class="group_items">
-                  <Show when={items[1] as unknown as TDatabaseExpense[]}>
-                    <For each={items[1] as unknown as TDatabaseExpense[]}>
-                      {item => <ListItem item={item} />}
-                    </For>
-                  </Show>
-                </div>
-              </div>}
-
-            </For>
-
-          </div>
-        </Show>
-
-        {/*
-        <Show when={typeof grouped !== "undefined"}>
-          <div class="grouped">
-            <For each={entries}>
-
-            </For>
-
-          </div>
-        </Show>
-        */}
-
-
-        <div class="rounded-3xl overflow-y-clip">
+        <div class="rounded-3xl overflow-y-clip ">
           <div
-            class={`${styles.workspace} workspace bg-slate-100 dark:bg-slate-900`}>
-            <section>
-              {/* figure acts as a container to make any content scrollable horizontally. */}
-              <Show when={expenses() !== null}>
-                <div class="grid gap-2">
-                  <For each={sortByDate(expenses())}>
-                    {item => <ListItem item={item} />}
-                  </For>
-                </div>
-              </Show>
-            </section>
+            class={`${styles.workspace} border h-full workspace bg-slate-100 dark:bg-slate-900`}>
+            <Show when={groupedState()}>
+              <For each={groupedState() as unknown[] as [string, TDatabaseExpense[]]}>
+                {items => (
+                  <section class="bg-card rounded-xl border! p-4! space-y-1">
+                    <h2 class="text-sm tracking-tighter text-muted-foreground">{items[0] as string}</h2>
+                    <div class="group_items">
+                      <Show when={items[1] as unknown as TDatabaseExpense[]}>
+                        <For each={items[1] as unknown as TDatabaseExpense[]}>
+                          {item => <ListItem item={item} />}
+                        </For>
+                      </Show>
+                    </div>
+                  </section>
+                )}
+              </For>
+            </Show>
 
-
-            <section>
+            <section class="hidden">
               <div class="grid gap-2">
                 <For each={todos}>
                   {(todo, i) => (
@@ -233,7 +207,7 @@ const App: Component = () => {
             </section>
 
             <div
-              class="place-self-end m-0 sticky bottom-0 bg-slate-100 dark:bg-slate-900 pb-8 py-4 mx-0 px-12 left-0 right-0 w-full"
+              class="place-self-end top-full m-0 sticky bottom-0 bg-slate-100 dark:bg-slate-900 pb-8 py-4 mx-0 px-12 left-0 right-0 w-full"
             >
               <form onSubmit={addTodo} class="flex h-fit w-full gap-4 mx-auto">
                 <input

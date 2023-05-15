@@ -4,14 +4,12 @@
 
 .workspace {
   overflow-y: auto;
-  @apply grid max-h-[88vh] mx-0 min-h-[88vh] overflow-y-auto space-y-6;
+  /* @apply grid grid-flow-row-dense max-h-[88vh] mx-0 min-h-[88vh] overflow-y-auto; */
+  @apply block max-h-[88vh] mx-0 min-h-[88vh] overflow-y-auto;
+  /* @apply space-y-6; */
   @apply rounded-[28px];
+  @apply pt-8;
 
-  > section {
-    @apply bg-background;
-    @apply m-4 p-8;
-    @apply rounded-3xl;
-  }
 
   &::-webkit-scrollbar {
     width: 6px;
@@ -31,6 +29,14 @@
   }
 
 	@media (prefers-color-scheme: dark) { }
+}
+
+.workspace section {
+    @apply bg-background;
+    @apply h-fit;
+    @apply mx-4 mb-4 p-8;
+    @apply rounded-3xl;
+  
 }
 
 
