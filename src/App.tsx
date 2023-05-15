@@ -1,11 +1,14 @@
 import { batch, Component, createEffect, createResource, createSignal, For, JSXElement, lazy, Show } from 'solid-js';
 import { JSX } from "solid-js/jsx-runtime";
 import styles from './App.module.css';
+import { PlusIcon } from './components/icons';
 import { ListItem } from './components/ListItem';
 import { ThemeToggle } from './components/ThemeToggle';
 import { createLocalStore, removeIndex } from "./lib/store";
 import { supabase } from './lib/supabase-client';
 import type { Expense } from './lib/types';
+import { radixSort } from './lib/radix-sort';
+import { Ordering } from "./lib/enums";
 import { Database, TDatabaseExpense } from './lib/types-supabase';
 import logo from './logo.svg';
 
@@ -40,19 +43,30 @@ const App: Component = () => {
   const [userId, setUserId] = createSignal();
   const [expenses, setExpenses] = createSignal<TDatabaseExpense[] | null>(null);
   const [user] = createResource(userId, fetchUser);
+  const [groupedState, setGroupedState] = createSignal<unknown | null>(null);
+  const [newTitle, setTitle] = createSignal("");
+  const [todos, setTodos] = createLocalStore<TodoItem[]>("todos", []);
 
   // TODO: Effects are meant primarily for side effects that read but don't write to the reactive system
   // : it's best to avoid setting signals in effects, which without care can cause additional rendering
   // or even infinite effect loops. Instead, prefer using createMemo to compute new values that depend
   // on other reactive values, so the reactive system knows what depends on what, and can optimize accordingly
+  let entries;
   createEffect(async () => {
     const data = await getDB();
     if (!data) return;
     setExpenses(data);
-  });
-
-  const [newTitle, setTitle] = createSignal("");
-  const [todos, setTodos] = createLocalStore<TodoItem[]>("todos", []);
+    const items = expenses();
+    if (items) {
+      // const grouped = groupedTodos(sortByDate(items));
+      const grouped = groupedTodos(radixSort(items, Ordering.Greater));
+      if (grouped) {
+        entries = Object.entries(grouped);
+        setGroupedState(entries);
+        console.log({ entries, entries_type: typeof entries });
+      }
+    }
+  })
 
   const addTodo = (e: SubmitEvent) => {
     e.preventDefault();
@@ -64,8 +78,6 @@ const App: Component = () => {
       setTitle("");
     });
   };
-
-
 
   const sortByDate = (items: TDatabaseExpense[] | null) => {
     const data = items;
@@ -102,37 +114,14 @@ const App: Component = () => {
     }
   };
 
-  let entries;
-  const [groupedState, setGroupedState] = createSignal<unknown | null>(null);
 
-  createEffect(() => {
-    if (expenses() !== null) {
-      const items = expenses();
-      if (sortByDate(items) !== null) {
-        const grouped = groupedTodos(sortByDate(items));
-        for (const key in grouped) {
-          console.log(key);
-          for (const todo of grouped[key]) {
-            console.log(`  ${todo.name} - ${todo.description}`);
-          }
-        }
-      }
 
-      const grouped = groupedTodos(sortByDate(items));
-      if (grouped) {
-        entries = Object.entries(grouped);
-        setGroupedState(entries);
-        console.log({ entries, entries_type: typeof entries });
-      }
-    }
-  })
-
-  const items = expenses();
-  const grouped = groupedTodos(sortByDate(items));
+  // const items = expenses();
+  // const grouped = groupedTodos(sortByDate(items));
 
   return (
     <div class="@container h-screen">
-      <div class="container border! h-full flex flex-col justify-between max-w-lg @md:max-w-3xl space-y-2 mx-auto py-8!">
+      <div class="container border! h-full flex flex-col justify-between max-w-lg @md:max-w-3xl space-y-0 mx-auto py-8!">
         <header class="py-6">
           <div class="flex justify-between">
             <div class="logo">wallet</div>
@@ -216,7 +205,7 @@ const App: Component = () => {
               onInput={(e) => setTitle(e.currentTarget.value)}
               class="border p-4 rounded-[50px] bg-background w-full max-w-xl"
             />
-            <button class="" type="submit">+</button>
+            <button class="" type="submit"><PlusIcon /></button>
           </form>
         </div>
       </div>

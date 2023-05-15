@@ -26,13 +26,13 @@
     @apply rounded-sm;
   }
 }
+  
 .list_window section {
     @apply bg-background;
     @apply h-fit;
-    @apply mx-4 mb-4 p-8;
+    @apply mx-4 mb-4 p-6;
     @apply rounded-3xl;
 }
-  
 
 .workspace {
   overflow-y: auto;
