@@ -132,7 +132,7 @@ const App: Component = () => {
 
   return (
     <div class="@container h-screen">
-      <div class="container  max-w-lg @md:max-w-3xl space-y-2 mx-auto py-8!">
+      <div class="container border! h-full flex flex-col justify-between max-w-lg @md:max-w-3xl space-y-2 mx-auto py-8!">
         <header class="py-6">
           <div class="flex justify-between">
             <div class="logo">wallet</div>
@@ -143,87 +143,84 @@ const App: Component = () => {
           </div>
         </header>
 
-        <div class="rounded-3xl overflow-y-clip ">
-          <div
-            class={`${styles.workspace} border h-full workspace bg-slate-100 dark:bg-slate-900`}>
-            <Show when={groupedState()}>
-              <For each={groupedState() as unknown[] as [string, TDatabaseExpense[]]}>
-                {items => (
-                  <section class="bg-card rounded-xl border! p-4! space-y-1">
-                    <h2 class="text-sm tracking-tighter text-muted-foreground">{items[0] as string}</h2>
-                    <div class="group_items">
-                      <Show when={items[1] as unknown as TDatabaseExpense[]}>
-                        <For each={items[1] as unknown as TDatabaseExpense[]}>
-                          {item => <ListItem item={item} />}
-                        </For>
-                      </Show>
-                    </div>
-                  </section>
+        <div class={styles.list_window}>
+          <Show when={groupedState()}>
+            <For each={groupedState() as unknown[] as [string, TDatabaseExpense[]]}>
+              {items => (
+                <section class="bg-card rounded-xl border! p-4! space-y-1">
+                  <h2 class="text-sm tracking-tighter text-muted-foreground">{items[0] as string}</h2>
+                  <div class="group_items">
+                    <Show when={items[1] as unknown as TDatabaseExpense[]}>
+                      <For each={items[1] as unknown as TDatabaseExpense[]}>
+                        {item => <ListItem item={item} />}
+                      </For>
+                    </Show>
+                  </div>
+                </section>
+              )}
+            </For>
+          </Show>
+
+          <section class="hidden">
+            <div class="grid gap-2">
+              <For each={todos}>
+                {(todo, i) => (
+                  <div class="flex gap-4 w-full mx-auto items-center">
+                    <input
+                      type="checkbox"
+                      checked={todo.done}
+                      onChange={(e) => setTodos(i(), "done", e.currentTarget.checked)}
+                      data-tooltip={`Consolidate ${todo.title}`}
+                      data-placement="right"
+                      class="form-checkbox  bg-background rounded"
+                    />
+                    <input
+                      type="text"
+                      value={todo.title}
+                      onChange={(e) => setTodos(i(), "title", e.currentTarget.value)}
+                      class="form-input bg-background w-full "
+                    />
+                    <button class="" onClick={() => setTodos((t) => removeIndex(t, i()))}
+                      data-tooltip={`Delete ${todo.title}`}
+                    >
+                      x
+                    </button>
+                  </div>
                 )}
               </For>
-            </Show>
-
-            <section class="hidden">
-              <div class="grid gap-2">
-                <For each={todos}>
-                  {(todo, i) => (
-                    <div class="flex gap-4 w-full mx-auto items-center">
-                      <input
-                        type="checkbox"
-                        checked={todo.done}
-                        onChange={(e) => setTodos(i(), "done", e.currentTarget.checked)}
-                        data-tooltip={`Consolidate ${todo.title}`}
-                        data-placement="right"
-                        class="form-checkbox  bg-background rounded"
-                      />
-                      <input
-                        type="text"
-                        value={todo.title}
-                        onChange={(e) => setTodos(i(), "title", e.currentTarget.value)}
-                        class="form-input bg-background w-full "
-                      />
-                      <button class="" onClick={() => setTodos((t) => removeIndex(t, i()))}
-                        data-tooltip={`Delete ${todo.title}`}
-                      >
-                        x
-                      </button>
-                    </div>
-                  )}
-                </For>
-              </div>
-            </section>
-
-            <section class="hidden">
-              <input
-                type="number"
-                min="1"
-                placeholder="Enter Numeric Id"
-                onInput={(e) => setUserId(e.currentTarget.value)}
-              />
-              <span>{user.loading && "Loading..."}</span>
-              <div>
-                <pre>{JSON.stringify(user(), null, 2)}</pre>
-              </div>
-            </section>
-
-            <div
-              class="place-self-end top-full m-0 sticky bottom-0 bg-slate-100 dark:bg-slate-900 pb-8 py-4 mx-0 px-12 left-0 right-0 w-full"
-            >
-              <form onSubmit={addTodo} class="flex h-fit w-full gap-4 mx-auto">
-                <input
-                  placeholder="enter todo and click +"
-                  required
-                  value={newTitle()}
-                  onInput={(e) => setTitle(e.currentTarget.value)}
-                  class="border p-4 rounded-[50px] bg-background w-full max-w-xl"
-                />
-                <button class="" type="submit">+</button>
-              </form>
             </div>
-          </div>
+          </section>
+
+          <section class="hidden">
+            <input
+              type="number"
+              min="1"
+              placeholder="Enter Numeric Id"
+              onInput={(e) => setUserId(e.currentTarget.value)}
+            />
+            <span>{user.loading && "Loading..."}</span>
+            <div>
+              <pre>{JSON.stringify(user(), null, 2)}</pre>
+            </div>
+          </section>
+        </div>
+
+        <div
+          class="place-self-end flex-shrink-0 top-full m-0 sticky bottom-0 bg-slate-100 dark:bg-slate-900 pb-8 py-4 mx-0 px-12 left-0 right-0 w-full"
+        >
+          <form onSubmit={addTodo} class="flex h-fit w-full gap-4 mx-auto">
+            <input
+              placeholder="enter todo and click +"
+              required
+              value={newTitle()}
+              onInput={(e) => setTitle(e.currentTarget.value)}
+              class="border p-4 rounded-[50px] bg-background w-full max-w-xl"
+            />
+            <button class="" type="submit">+</button>
+          </form>
         </div>
       </div>
-    </div >
+    </div>
   );
 };
 
