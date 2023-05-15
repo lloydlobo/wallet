@@ -65,6 +65,8 @@ const App: Component = () => {
     });
   };
 
+
+
   const sortByDate = (items: TDatabaseExpense[] | null) => {
     const data = items;
     if (data) {
@@ -78,6 +80,42 @@ const App: Component = () => {
     }
     return data;
   }
+
+  // Group the items based on months and years using the reduce() method.
+  const groupedTodos = (items: TDatabaseExpense[] | null) => {
+    if (items)
+      return items.reduce((acc: { [key: string]: TDatabaseExpense[]; }, item) => {
+
+        const month = new Date(item.transaction_date ?? "").toLocaleString("default", { month: "long" });
+        const year = new Date(item.transaction_date ?? "").getFullYear().toString();
+
+        const key = `${month} ${year}`;
+
+        if (!acc[key]) {
+          acc[key] = [];
+        }
+
+        acc[key].push(item);
+
+        return acc;
+      }, {});
+  };
+
+  createEffect(() => {
+    if (expenses() !== null) {
+      const items = expenses();
+      const sorted = sortByDate(items);
+      if (sorted !== null) {
+        const grouped = groupedTodos(sorted);
+        for (const key in grouped) {
+          console.log(key);
+          for (const todo of grouped[key]) {
+            console.log(`  ${todo.name} - ${todo.description}`);
+          }
+        }
+      }
+    }
+  })
 
   return (
     <div class="@container h-screen">

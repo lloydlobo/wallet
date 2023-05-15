@@ -1,11 +1,9 @@
-// // @ts-nocheck
+////\@ts-nocheck
 import { createEffect, createSignal, lazy, onCleanup, onMount, Show } from "solid-js";
 import { JSX } from "solid-js/jsx-runtime";
+import { mergeProps } from 'solid-js';
 import { TDatabaseExpense } from "../lib/types-supabase";
 
-type ListItemProps = {
-  item: TDatabaseExpense;
-}
 
 function parseDate(value: string | number | Date): { year: number; month: number; date: number; } {
   const d = new Date(value);
@@ -44,9 +42,12 @@ function parseWeekNumberToText(weekDay: number) {
 
 }
 
-export function ListItem({ item }: ListItemProps): JSX.Element {
+type ListItemProps = {
+  item: TDatabaseExpense;
+}
+export function ListItem(props: ListItemProps): JSX.Element {
   const [showModal, setShowModal] = createSignal(false);
-  const [itemsState, setItemState] = createSignal(item);
+  const [itemsState, setItemState] = createSignal(props.item);
   const transaction_date = itemsState().transaction_date;
 
   // REFACTOR: fmtDate... etc with this parse...
@@ -58,6 +59,9 @@ export function ListItem({ item }: ListItemProps): JSX.Element {
   const dayDate = new Date(fmtDate()).getDate().toString().padStart(2, '0');
   const dayName = parseWeekNumberToText(new Date(fmtDate()).getDay()).asString.slice(0, 3);
 
+
+  const merged = mergeProps({ ownerName: "John", month: 4 }, props);
+  console.log({ merged, ownerName: merged.ownerName, itemName: merged.item.name });
 
   let modalRef: HTMLDivElement | ((el: HTMLDivElement) => void) | undefined;
 
@@ -119,15 +123,15 @@ export function ListItem({ item }: ListItemProps): JSX.Element {
           <div ref={modalRef} class="bg-card max-w-md place-self-center p-8 shadow border rounded-2xl w-full">
             <form action="">
               <div class="grid gap-4 [&>input]:border-b-muted [&>input]:border-transparent">
-                <input type="text" class="form-input" value={item.name} />
-                <textarea class="form-textarea border-b-muted border-transparent" value={item.description ?? ""} />
+                <input type="text" class="form-input" value={merged.item.name} />
+                <textarea class="form-textarea border-b-muted border-transparent" value={props.item.description ?? ""} />
                 <input type="date" class="form-input"
                   // style={{ background: "hsl(var(--muted))", "border-color": "transparent" }}
                   value={initialDate} />
-                <input type="number" class="form-input" value={item.amount} />
+                <input type="number" class="form-input" value={props.item.amount} />
                 <div class="flex bg-background border-transparent form-input items-center gap-2">
                   <label for="isCash" class="text-muted-foreground text-sm">Cash: </label>
-                  <input id="isCash" type="checkbox" class="form-checkbox" checked={item.is_cash} />
+                  <input id="isCash" type="checkbox" class="form-checkbox" checked={props.item.is_cash} />
                 </div>
                 <div class="grid @md:grid-cols-2 place-self-end justify-end gap-2">
                   <button onClick={(ev) => setShowModal(false)} class="text-destructive" type="submit">Cancel</button>
