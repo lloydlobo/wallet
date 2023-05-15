@@ -77,7 +77,7 @@ function countingSort(props: CountingSort): TDatabaseExpense[] {
         item.transaction_date ?? item.created_at ?? item.updated_at
       ).getTime() /
         props.divisor) %
-        10
+      10
     );
 
     counts[digit].push(item);
@@ -158,3 +158,18 @@ function countingSort(props: CountingSort): TDatabaseExpense[] {
  * sort the items based on their timestamps. The radix sort algorithm has a time complexity of
  * O(kn), where n is the number of items and k is the number of digits in the maximum timestamp.
  */
+
+// ARCHIVE
+// const sortByDate = (items: TDatabaseExpense[] | null) => {
+//   const data = items;
+//   if (data) {
+//     data.sort((a, b) => {
+//       const aTimestampz = new Date(a.transaction_date ?? a.created_at ?? a.updated_at).getTime();
+//       const bTimestampz = new Date(b.transaction_date ?? b.created_at ?? b.updated_at).getTime();
+//       console.log({ date_a: aTimestampz, date_b: bTimestampz });
+//       return -1 * (aTimestampz - bTimestampz); // latest at top.
+//     });
+//   }
+//   return data;
+// }
+//

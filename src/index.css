@@ -106,12 +106,22 @@ code {
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  input,textarea {
+  input, textarea {
     @apply bg-background dark:bg-background;
   }
 
   form input {
       @apply form-input;
+      @apply bg-background dark:bg-background;
+  }
+  form textarea {
+      @apply form-textarea;
+      @apply bg-background dark:bg-background;
+  }
+ form input[type="checkbox"] {
+    /* background-color:inherit; */
+    @apply form-checkbox rounded-sm;
+    @apply dark:bg-muted border-muted-foreground;
   }
 
 /* [data-theme="dark"]  */
@@ -119,7 +129,6 @@ code {
 .dark input[type="date"]::-webkit-calendar-picker-indicator {
     @apply invert;
   }
-
 
   /* Add a custom icon */
   input[type="date"]::before {

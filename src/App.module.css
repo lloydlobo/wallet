@@ -2,6 +2,38 @@
   text-align: center;
 }
 
+/* form { */
+/*   width: 350px; */
+/*   margin: 20px; */
+/*   padding: 12px; */
+/*   border: 1px solid gray; */
+/* } */
+
+form .formControl {
+  display:grid;
+  grid-template-columns: 14ch 1fr;
+  justify-content: space-between;
+  align-items: center;
+  @apply px-2 mb-2;
+  @apply gap-2;
+
+  > label {
+    text-align: left;
+    @apply text-muted-foreground text-sm tracking-wide;
+  }
+
+  >  input[type="checkbox"]{
+    margin-inline-start: 1ch;
+  }
+
+  >  input[type="number"]{
+    @apply font-mono;
+    &::placeholder {
+      font-family: sans-serif;
+    }
+  }
+}
+
 .list_window {
   @apply bg-muted;
   @apply rounded-t-[28px];
