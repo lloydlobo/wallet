@@ -81,32 +81,35 @@ const App: Component = () => {
     return data;
   }
 
-  // Group the items based on months and years using the reduce() method.
+  /**
+   * Group the items based on months and years using the reduce() method.
+   * @param items - Array of TDatabaseExpense items to be grouped.
+   * @returns An object where keys represent month and year combinations, and values are arrays of TDatabaseExpense
+   * items for each group.
+   */
   const groupedTodos = (items: TDatabaseExpense[] | null) => {
-    if (items)
+    if (items) {
       return items.reduce((acc: { [key: string]: TDatabaseExpense[]; }, item) => {
-
         const month = new Date(item.transaction_date ?? "").toLocaleString("default", { month: "long" });
         const year = new Date(item.transaction_date ?? "").getFullYear().toString();
-
         const key = `${month} ${year}`;
-
         if (!acc[key]) {
           acc[key] = [];
         }
-
         acc[key].push(item);
-
         return acc;
       }, {});
+    }
   };
+
+  let entries;
+  const [groupedState, setGroupedState] = createSignal<unknown | null>(null);
 
   createEffect(() => {
     if (expenses() !== null) {
       const items = expenses();
-      const sorted = sortByDate(items);
-      if (sorted !== null) {
-        const grouped = groupedTodos(sorted);
+      if (sortByDate(items) !== null) {
+        const grouped = groupedTodos(sortByDate(items));
         for (const key in grouped) {
           console.log(key);
           for (const todo of grouped[key]) {
@@ -114,8 +117,18 @@ const App: Component = () => {
           }
         }
       }
+
+      const grouped = groupedTodos(sortByDate(items));
+      if (grouped) {
+        entries = Object.entries(grouped);
+        setGroupedState(entries);
+        console.log({ entries, entries_type: typeof entries });
+      }
     }
   })
+
+  const items = expenses();
+  const grouped = groupedTodos(sortByDate(items));
 
   return (
     <div class="@container h-screen">
@@ -129,6 +142,37 @@ const App: Component = () => {
             </div>
           </div>
         </header>
+
+        <Show when={groupedState()}>
+          <div class="group grid gap-2">
+            <For each={groupedState() as unknown[] as [string, TDatabaseExpense[]]}>
+              {items => <div class="bg-card rounded-xl border p-4">
+                <h2 class="text-xl">{items[0] as string}</h2>
+                <div class="group_items">
+                  <Show when={items[1] as unknown as TDatabaseExpense[]}>
+                    <For each={items[1] as unknown as TDatabaseExpense[]}>
+                      {item => <ListItem item={item} />}
+                    </For>
+                  </Show>
+                </div>
+              </div>}
+
+            </For>
+
+          </div>
+        </Show>
+
+        {/*
+        <Show when={typeof grouped !== "undefined"}>
+          <div class="grouped">
+            <For each={entries}>
+
+            </For>
+
+          </div>
+        </Show>
+        */}
+
 
         <div class="rounded-3xl overflow-y-clip">
           <div
