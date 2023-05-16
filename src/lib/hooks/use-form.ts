@@ -1,7 +1,7 @@
 // @aource https://codesandbox.io/s/solidjs-submit-form-with-store-6kh4c?from-embed=&file=%2Fsrc%2FuseForm.ts
 
 import { createStore } from "solid-js/store";
-import { insertRowsDB } from "../../App";
+import { insertRowsDB } from "../db/controllers";
 import { TDatabaseExpense } from "../types-supabase";
 
 const submit = async (formStore: Partial<TDatabaseExpense>) => {

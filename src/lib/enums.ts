@@ -5,3 +5,7 @@ export enum Ordering {
   // None,
 }
 
+export enum Databases {
+  DB_NAME_EXPENSES = "expenses"
+}
+
