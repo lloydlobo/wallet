@@ -20,7 +20,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
 
   const [fmtDate, setFmtDate] = createSignal(transaction_date ?? "");//Note: dow we need to set individually? or  use a store?
   const dayDate = new Date(fmtDate()).getDate().toString().padStart(2, '0');
-  const dayName = asDayOfWeek(new Date(fmtDate()).getDay()).weekDay.slice(0, 3);
+  const dayName = asDayOfWeek(new Date(fmtDate())).weekDay.slice(0, 3); // const dayName = asDayOfWeek(new Date(fmtDate()).getDay()).weekDay.slice(0, 3);
 
   const merged = mergeProps({ ownerName: "John", month: 4 }, props);
 
