@@ -2,6 +2,26 @@
   text-align: center;
 }
 
+button.button{
+  @apply flex gap-4 items-center;
+  @apply hover:bg-muted;
+  @apply py-4 ps-6 w-full;
+
+  /* > svg { */
+  /*   @apply col-span-1; */
+  /* } */
+  /**/
+  /* > div { */
+  /*   @apply col-span-2; */
+  /* } */
+}
+
+div.button {
+  /* @apply grid grid-cols-[4px,1fr]; */
+  @apply hover:bg-muted;
+  @apply py-4 w-full;
+}
+
 /* form { */
 /*   width: 350px; */
 /*   margin: 20px; */

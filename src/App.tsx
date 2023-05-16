@@ -110,14 +110,43 @@ const App: Component = () => {
   return (
     <div class="@container h-screen">
       <div class="container border! h-full flex flex-col justify-between max-w-lg @md:max-w-3xl space-y-0 mx-auto py-8!">
-        <header class="py-6">
-          <div class="flex justify-between">
-            <div class="logo">wallet</div>
-            <div class="nav-end grid gap-4 grid-flow-col">
-              <a class={styles.link} href="/">
-                Refresh
-              </a>
+        <aside class="absolute min-w-md flex flex-col justify-between w-full max-w-[200px] bg-background h-screen left-0">
+          <div class="grid [&>button]:rounded-e-full mt-16 text-lg [&>*]:tracking-wide">
+            <button class={styles.button}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke:currentColor;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+              <div class="settings">Activity</div>
+            </button>
+            <button class={styles.button}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke:currentColor;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <div class="settings">Settings</div>
+            </button>
+          </div>
+
+          <div class="border border-transparent border-t-muted-foreground/50">
+            <div class={`${styles.button} rounded-e-full my-2 text-lg`}>
               <ThemeToggle />
+            </div>
+          </div>
+        </aside>
+        <header class="py-4">
+          <div class="flex items-center w-full justify-between">
+            <div class="flex gap-4 items-baseline place-content-center justify-center">
+              <button title="Main Menu" class="grid border border-transparent h-4 place-self-center">
+                <div class="w-5 h-[2px] bg-foreground/50"></div>
+                <div class="w-5 h-[2px] bg-foreground/50"></div>
+                <div class="w-5 h-[2px] bg-foreground/50"></div>
+              </button>
+              <div class="flex gap-[6px] leading-none items-center relative">
+                <div class="logo text-xl leading-none text-foreground/70 capitalize ">wallet</div>
+                <span class="outline outline-1 rounded pt-0.5 font-semibold text-blue-500 outline-blue-500 text-[11px] px-1">Beta</span>
+              </div>
+            </div>
+
+            <div class="nav-end grid items-center gap-4 grid-flow-col">
+              <div class=""><ThemeToggle /></div>
+              <button class="scale-150 text-muted-foreground">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-circle-2" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke:currentColor;"><path d="M18 20a6 6 0 0 0-12 0"></path><circle cx="12" cy="10" r="4"></circle><circle cx="12" cy="12" r="10"></circle></svg>
+              </button>
             </div>
           </div>
         </header>
