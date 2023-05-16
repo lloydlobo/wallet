@@ -5,7 +5,8 @@ import { mergeProps } from 'solid-js';
 import { TDatabaseExpense } from "../lib/types-supabase";
 
 
-function parseDate(value: string | number | Date): { year: number; month: number; date: number; } {
+function parseDate(value: Date): { year: number; month: number; date: number; } {
+  // console.log(value)
   const d = new Date(value);
   if (isNaN(d.getTime())) {
     throw new Error('Invalid date format');
@@ -48,7 +49,7 @@ type ListItemProps = {
 export function ListItem(props: ListItemProps): JSX.Element {
   const [showModal, setShowModal] = createSignal(false);
   const [itemsState, setItemState] = createSignal(props.item);
-  const transaction_date = itemsState().transaction_date;
+  const transaction_date = itemsState().transaction_date ?? itemsState().updated_at;
 
   // REFACTOR: fmtDate... etc with this parse...
   const dateTransaction = new Date(transaction_date ?? "");
@@ -61,7 +62,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
 
 
   const merged = mergeProps({ ownerName: "John", month: 4 }, props);
-  console.log({ merged, ownerName: merged.ownerName, itemName: merged.item.name });
+  // console.log({ merged, ownerName: merged.ownerName, itemName: merged.item.name });
 
   let modalRef: HTMLDivElement | ((el: HTMLDivElement) => void) | undefined;
 

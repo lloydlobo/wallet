@@ -7,7 +7,7 @@ import {
   For,
   JSXElement,
   lazy,
-  Show,
+  Show
 } from "solid-js";
 import { JSX } from "solid-js/jsx-runtime";
 import { createStore, SetStoreFunction, Store } from "solid-js/store";
@@ -16,15 +16,15 @@ import { PlusIcon } from "./components/icons";
 import { ListItem } from "./components/ListItem";
 import { ThemeToggle } from "./components/ThemeToggle";
 import { Ordering } from "./lib/enums";
+import { useForm } from "./lib/hooks/use-form";
 import { radixSort } from "./lib/radix-sort";
 import {
   createLocalStore,
   createLocalStoreTodos,
-  removeIndex,
+  removeIndex
 } from "./lib/store";
 import { supabase } from "./lib/supabase-client";
 import { Database, TDatabaseExpense } from "./lib/types-supabase";
-import { useForm } from "./lib/hooks/use-form";
 
 const DB_NAME_EXPENSES = "expenses";
 
@@ -36,7 +36,43 @@ async function getDB(): Promise<TDatabaseExpense[] | null | undefined> {
     console.error(err);
   }
 }
-async function insertDB() {
+async function getName() {
+  let { data: expenses, error } = await supabase
+    .from('expenses')
+    .select('name');
+  console.log(expenses);
+}
+export async function insertRowsDB<T extends object>(rows: T[]) {
+  const { data, error } = await supabase
+    .from('expenses')
+    .insert(rows);
+  if (error) {
+    console.error('Error inserting row:', error);
+    return;
+  }
+
+  console.log('New row inserted:', data);
+}
+
+async function deleteRowsDB() {
+  const { data, error } = await supabase
+    .from('expenses')
+    .delete()
+    .eq('some_column', 'someValue').select();
+  console.log(data, error)
+}
+
+export async function updateRowsDB() {
+  const { data, error } = await supabase
+    .from('expenses')
+    // .update({ name: 'Coca Cola' })
+    // .eq('name', 'Coke')
+    .update({ name: 'Coke' })
+    .eq('name', 'Coca Cola')
+    .select(); // Note: to update the record and return it use `.select()`.
+  console.log(data, error);
+}
+export async function insertDB() {
   try {
     const { data } = await supabase.from(DB_NAME_EXPENSES).insert({
       name: "Ramen",
@@ -76,24 +112,21 @@ const App: Component = () => {
   const [groupedState, setGroupedState] = createSignal<unknown | null>(null);
   const [isFormOpen, setIsFormOpen] = createSignal(false);
 
-  const handleSubmitForm = (
+  const handleSubmitForm = async (
     ev: Event & { submitter: HTMLElement } & {
       currentTarget: HTMLFormElement;
       target: Element;
     }
-  ): void => {
+  ) => {
     ev.preventDefault();
-    submit(formStore);
+    await submit(formStore);
     setIsFormOpen(false);
   };
 
+  // const [todos, setTodos] = createLocalStoreTodos<TodoItem[]>("todos", []);
   // createEffect(() => { if (formStore.sameAsAddress) { clearField("shippingAddress") } })
 
-  const [todos, setTodos] = createLocalStoreTodos<TodoItem[]>("todos", []);
 
-  // const [currentExpense, setCurrentExpense] = createSignal<TDatabaseExpense>({} as TDatabaseExpense);
-  // const { validate, formSubmit, errors } = useForm({ errorClass: "error-input" });
-  // const [fields, setFields] = createStore();
   // const [userId, setUserId] = createSignal();
   // const [user] = createResource(userId, fetchUser);
 
@@ -101,6 +134,8 @@ const App: Component = () => {
   createEffect(async () => {
     const data = await getDB();
     if (!data) return;
+    await getName();
+    // await updateRowsDB();
     setExpenses(data);
     const items = expenses();
     if (!items) return;
@@ -194,42 +229,6 @@ const App: Component = () => {
               )}
             </For>
           </Show>
-
-          <section class="hidden">
-            <div class="grid gap-2">
-              <For each={todos}>
-                {(todo, i) => (
-                  <div class="flex gap-4 w-full mx-auto items-center">
-                    <input
-                      type="checkbox"
-                      checked={todo.done}
-                      onChange={(e) =>
-                        setTodos(i(), "done", e.currentTarget.checked)
-                      }
-                      data-tooltip={`Consolidate ${todo.title}`}
-                      data-placement="right"
-                      class="form-checkbox  bg-background rounded"
-                    />
-                    <input
-                      type="text"
-                      value={todo.title}
-                      onChange={(e) =>
-                        setTodos(i(), "title", e.currentTarget.value)
-                      }
-                      class="form-input bg-background w-full "
-                    />
-                    <button
-                      class=""
-                      onClick={() => setTodos((t) => removeIndex(t, i()))}
-                      data-tooltip={`Delete ${todo.title}`}
-                    >
-                      x
-                    </button>
-                  </div>
-                )}
-              </For>
-            </div>
-          </section>
 
           {/*
             <input type="number" min="1" placeholder="Enter Numeric Id" onInput={(e) => setUserId(e.currentTarget.value)} />
@@ -380,3 +379,40 @@ function fetchUserName(name: string): Promise<unknown> {
     setTimeout(() => resolve(EMAILS.indexOf(name) > -1), 200);
   });
 }
+
+
+          // <section class="hidden">
+          //   <div class="grid gap-2">
+          //     <For each={todos}>
+          //       {(todo, i) => (
+          //         <div class="flex gap-4 w-full mx-auto items-center">
+          //           <input
+          //             type="checkbox"
+          //             checked={todo.done}
+          //             onChange={(e) =>
+          //               setTodos(i(), "done", e.currentTarget.checked)
+          //             }
+          //             data-tooltip={`Consolidate ${todo.title}`}
+          //             data-placement="right"
+          //             class="form-checkbox  bg-background rounded"
+          //           />
+          //           <input
+          //             type="text"
+          //             value={todo.title}
+          //             onChange={(e) =>
+          //               setTodos(i(), "title", e.currentTarget.value)
+          //             }
+          //             class="form-input bg-background w-full "
+          //           />
+          //           <button
+          //             class=""
+          //             onClick={() => setTodos((t) => removeIndex(t, i()))}
+          //             data-tooltip={`Delete ${todo.title}`}
+          //           >
+          //             x
+          //           </button>
+          //         </div>
+          //       )}
+          //     </For>
+          //   </div>
+          // </section>

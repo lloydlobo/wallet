@@ -1,10 +1,12 @@
 // @aource https://codesandbox.io/s/solidjs-submit-form-with-store-6kh4c?from-embed=&file=%2Fsrc%2FuseForm.ts
 
 import { createStore } from "solid-js/store";
+import { insertRowsDB } from "../../App";
 import { TDatabaseExpense } from "../types-supabase";
-const submit = (formStore: Partial<TDatabaseExpense>) => {
+
+const submit = async (formStore: Partial<TDatabaseExpense>) => {
   // Filter out unnecessary data.
-  const dataToSubmit = {
+  const dataToSubmit: Partial<TDatabaseExpense> = {
     amount: formStore.amount,
     created_at: formStore.created_at,
     description: formStore.description,
@@ -13,9 +15,22 @@ const submit = (formStore: Partial<TDatabaseExpense>) => {
     transaction_date: formStore.transaction_date,
     updated_at: formStore.updated_at,
   }; // owner: "", id: (expenses()?.length ?? -1) + 1,
-
-  // TODO: Submit to back-end server or database.
   console.log(`submitting ${JSON.stringify(dataToSubmit)}`);
+
+  // NOTE: Submit to back-end server or database.
+  const VITE_SUPABASE_OWNER = import.meta.env.VITE_SUPABASE_OWNER;
+  const now = new Date;
+  const dataWithOwnerToSubmit: Partial<TDatabaseExpense> = {
+    name: formStore.name,
+    description: formStore.description,
+    amount: formStore.amount,
+    is_cash: formStore.is_cash,
+    owner: VITE_SUPABASE_OWNER,
+    created_at: now.toISOString(),
+    updated_at: now.toISOString(),
+    transaction_date: formStore.transaction_date ?? now.toISOString(),
+  }
+  await insertRowsDB([dataWithOwnerToSubmit])
 }
 
 export function useForm() {
