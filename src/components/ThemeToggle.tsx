@@ -8,7 +8,8 @@ export function ThemeToggle(): JSX.Element {
   const modeTitle = (isDarkMode: boolean) => isDarkMode ? "dark" : "light";
   const [mode, setMode] = createSignal(modeTitle(isDarkMode));
 
-  function handleOnClick(ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element; }): void {
+  // function handleOnClick(ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element; }): void {
+  function handleOnClick(ev: Event): void {
     ev.preventDefault()
     if (mode() === "dark") {
       setMode("light")
@@ -19,13 +20,14 @@ export function ThemeToggle(): JSX.Element {
   }
 
   return (
-    <button
+    <div
       id="themeToggle"
       onClick={ev => handleOnClick(ev)}
-      class="relative hover:cursor-pointer items-center  p-[1px] hover:outline! outline-muted-foreground! outline-offset-8 outline-[3px] px-2 gap-2 flex rounded-full mx-3">
+      role="button"
+    >
       <div
         class="flex gap-1 cursor-pointer">
-        <div class="grid z-10">
+        <div class="">
           <Show when={mode() === 'light'}>
             <MoonIcon />
           </Show>
@@ -35,7 +37,7 @@ export function ThemeToggle(): JSX.Element {
         </div>
         <label for="themeToggle" class="cursor-pointer  w-full flex-shrink-0" >Use {mode() === "dark" ? "light" : "dark"} theme </label>
       </div>
-    </button>
+    </div>
   )
 }
 

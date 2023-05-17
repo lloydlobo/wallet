@@ -160,7 +160,6 @@ const App: Component = () => {
           </div>
 
           <div class="nav-end grid items-center gap-4 grid-flow-col">
-            <div class="hidden"><ThemeToggle /></div>
             <button class="text-muted-foreground">
               <svg xmlns="http://www.w3.org/2000/svg" width={24 + 12} height={24 + 12} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-circle-2" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke:currentColor;"><path d="M18 20a6 6 0 0 0-12 0"></path><circle cx="12" cy="10" r="4"></circle><circle cx="12" cy="12" r="10"></circle></svg>
             </button>
@@ -184,16 +183,17 @@ const App: Component = () => {
               </button>
             </div>
 
-            <div class="border border-transparent border-t-muted-foreground/50">
-              <div class={`${styles.button} rounded-e-full my-2 text-lg`}>
+            <div class="border border-transparent border-t-muted-foreground/50 ">
+              <button class={`${styles.button} rounded-e-full text-lg  my-2 `}>
                 <ThemeToggle />
-              </div>
+              </button>
             </div>
           </div>
         </aside>
       </Show>
 
 
+      {/* PERF: Use margin inline start to position main content wrt aside, for smooth transitions */}
       <main class={`${styles.main} ${isAsideOpen() ? "ms-[200px]!" : ""} container border! h-full flex flex-col justify-between max-w-lg @md:max-w-4xl px-8 space-y-0 mx-auto py-8!`}>
         <div class={styles.list_window}>
           <Show when={formStore}>
