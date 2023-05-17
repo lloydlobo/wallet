@@ -7,13 +7,21 @@ button.button{
   @apply hover:bg-muted;
   @apply py-4 ps-6 w-full;
 
-  /* > svg { */
-  /*   @apply col-span-1; */
-  /* } */
+  &:hover > svg {
+    @apply col-span-1;
+    animation: 3s infinite alternate spinslide;
+  }
   /**/
   /* > div { */
   /*   @apply col-span-2; */
   /* } */
+}
+
+@keyframes spinslide {
+  0% {transform: translateX(0%) rotate(72deg);}
+  25% {transform: translateX(25%) rotate(180deg);}
+  85% {transform: translateX(65%) rotate(240deg);}
+  100% {transform: translateX(80%) rotate(360deg);}
 }
 
 div.button {
