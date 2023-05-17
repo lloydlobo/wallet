@@ -79,7 +79,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
       </button>
 
       <Show when={showModal()}>
-        {/* rome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
+        {/* TODO: rome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
         <div onClick={ev => handleToggleModal(ev)} class="@container absolute z-50 bg-blend-overlay bg-background/50 grid place-content-center inset-0 backdrop-blur-sm">
           <div id="modalRef" ref={modalRef} class="bg-card max-w-md place-self-center p-8 shadow border rounded-2xl w-full">
             <form action="">
