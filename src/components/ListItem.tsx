@@ -27,9 +27,16 @@ export function ListItem(props: ListItemProps): JSX.Element {
   const merged = mergeProps({ ownerName: "John", month: 4 }, props);
 
   let modalRef: HTMLDivElement | ((el: HTMLDivElement) => void) | undefined;
+  let formInputNameRef: HTMLInputElement | undefined;
 
   createEffect(() => {
-    if (showModal() && modalRef) { document.addEventListener("keydown", handleEscapeKey); }
+    if (showModal() && modalRef) {
+      document.addEventListener("keydown", handleEscapeKey);
+
+      if (formInputNameRef) {
+        formInputNameRef.focus();
+      }
+    }
     onCleanup(() => { document.removeEventListener("keydown", handleEscapeKey); })
   }) // PERF: Overall, using onMount() and onCleanup() is a recommended approach for adding and removing event listeners in SolidJS, as it promotes better performance and ensures proper cleanup.
 
@@ -55,15 +62,14 @@ export function ListItem(props: ListItemProps): JSX.Element {
     }
   }
 
-  function handleOpenModal(ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element; }): void {
-    ev.preventDefault();
+  function handleOpenModal(): void {
     props.setIsItemModalOpen(true);
     setShowModal(!showModal());
   }
 
   return (
     <>
-      <button onClick={(ev) => handleOpenModal(ev)} class="grid hover:shadow hover:bg-muted transition-colors py-2 rounded-md px-4 grid-cols-4 justify-between w-full items-center">
+      <button onClick={handleOpenModal} class="grid hover:shadow hover:bg-muted transition-colors py-2 rounded-md px-4 grid-cols-4 justify-between w-full items-center">
         <div class="grid grid-cols-2 gap-1">
           <div class="flex gap-0.5">
             <span class="text-xs">{dayName}</span>
@@ -84,7 +90,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
           <div id="modalRef" ref={modalRef} class="bg-card max-w-md place-self-center p-8 shadow border rounded-2xl w-full">
             <form action="">
               <div class="grid gap-4 [&>input]:border-b-muted [&>input]:border-transparent">
-                <input type="text" class="form-input" value={merged.item.name} />
+                <input ref={formInputNameRef} type="text" class="form-input" value={merged.item.name} />
                 <textarea class="form-textarea border-b-muted border-transparent" value={props.item.description ?? ""} />
                 <input type="date" class="form-input"
                   // style={{ background: "hsl(var(--muted))", "border-color": "transparent" }}

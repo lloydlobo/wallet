@@ -5,6 +5,7 @@ import {
   createSignal,
   For,
   onCleanup,
+  onMount,
   Show
 } from "solid-js";
 import { JSX } from "solid-js/jsx-runtime";
@@ -86,12 +87,13 @@ const App: Component = () => {
   const [groupedState, setGroupedState] = createSignal<TGroupedExpense[] | null>(null);
 
   const [isFormOpen, setIsFormOpen] = createSignal<boolean>(false);
-  const [isAsideOpen, setIsAsideOpen] = createSignal<boolean>(true);
+  const [isAsideOpen, setIsAsideOpen] = createSignal<boolean>(false);
   const [isItemModalOpen, setIsItemModalOpen] = createSignal(false);
+
+  const breakpointSM = 640;// tailwind sm:640px.
 
   let asideRef: HTMLDivElement | undefined;
   let asideOverlayRef: HTMLDivElement | undefined;
-
 
   createEffect(() => {
     if (!isItemModalOpen() && isAsideOpen() && asideRef instanceof HTMLElement) {
@@ -101,6 +103,7 @@ const App: Component = () => {
         asideOverlayRef.addEventListener("mousedown", closeAsideOnOverlayInteraction);
       }
     }
+
     onCleanup(() => {
       document.removeEventListener("keydown", closeAsideOnEscape);
       if (asideOverlayRef) {
@@ -121,7 +124,15 @@ const App: Component = () => {
     setGroupedState(Object.entries(grouped));
   });
 
+  onMount(() => {
+    window.addEventListener("resize", handleResize);
+    onCleanup(() => {
+      window.removeEventListener("resize", handleResize);
+    })
+  })
 
+
+  const toggleSidebar = () => setIsAsideOpen(prev => !prev);
   const closeAsideOnOverlayInteraction = () => setIsAsideOpen(false);;
   const handleOpenAsideMenu = () => setIsAsideOpen(!isAsideOpen());
   const closeAsideOnEscape = (event: KeyboardEvent) => {
@@ -129,6 +140,14 @@ const App: Component = () => {
       setIsAsideOpen(false);
     }
   };
+  function handleResize(this: Window, ev: UIEvent) {
+    const isSmScreen = (): boolean => !(window.innerWidth >= breakpointSM);
+    if (isSmScreen() && isAsideOpen()) {
+      toggleSidebar();
+    } else if (!isSmScreen && !isAsideOpen()) {
+      toggleSidebar()
+    }
+  }
 
   async function handleSubmitForm(ev: Event & { submitter: HTMLElement; } & { currentTarget: HTMLFormElement; target: Element; }) {
     ev.preventDefault();
@@ -155,7 +174,7 @@ const App: Component = () => {
             </button>
             <div class="flex gap-[6px] leading-none items-center relative">
               <div class="logo text-xl leading-none text-foreground/70 capitalize ">wallet</div>
-              <span class="outline outline-1 rounded pt-0.5 font-semibold text-blue-500 outline-blue-500 text-[11px] px-1">Beta</span>
+              <span class="outline outline-[2.3px] rounded py-0.5 font-semibold text-blue-500 opacity-95 outline-blue-500/70 text-[11px] px-1">Beta</span>
             </div>
           </div>
 
@@ -330,6 +349,7 @@ const App: Component = () => {
 };
 
 export default App;
+
 
 
 
