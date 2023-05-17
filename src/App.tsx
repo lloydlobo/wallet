@@ -87,9 +87,17 @@ const App: Component = () => {
   //TODO: Create store for tracking global state of toggles aside or modals.
   const [isFormOpen, setIsFormOpen] = createSignal<boolean>(false);
   const [isAsideOpen, setIsAsideOpen] = createSignal<boolean>(true);
-  const [isModalOpen, setIsModalOpen] = createSignal(false); // HACK: Pass this to ListItem for temporary fix.
+
+  const [isItemModalOpen, setIsItemModalOpen] = createSignal(false); // HACK: Pass this to ListItem for temporary fix.
 
   let asideRef: HTMLDivElement | ((el: HTMLDivElement) => void) | undefined;
+
+  createEffect(() => {
+    if (!isItemModalOpen() && isAsideOpen() && asideRef instanceof HTMLElement) {
+      document.addEventListener("keydown", handleEscapeKey);
+    }
+    onCleanup(() => { document.removeEventListener("keydown", handleEscapeKey); })
+  })
 
   createEffect(async () => {
     const data = await getDB();
@@ -102,27 +110,15 @@ const App: Component = () => {
     setGroupedState(Object.entries(grouped));
   });
 
-  createEffect(() => {
-    if (isAsideOpen()) {
-      console.log("open");
-      document.addEventListener("keydown", handleEscapeKey);
-    }
-    onCleanup(() => { document.removeEventListener("keydown", handleEscapeKey); })
-  })
-
   function handleEscapeKey(this: Document, ev: KeyboardEvent) {
     ev.preventDefault();
     console.log(ev.key);
-    // alert!(ev.key);
-    // TODO: See if window width is less than breakpoint `md`.
-    // FIXME: If both aside and any modal is open, on Escape both will close.
     if (isAsideOpen() && !isFormOpen()) {
       if (ev.key === "Escape") {
         setIsAsideOpen(false);
       }
     }
   }
-
 
   async function handleSubmitForm(ev: Event & { submitter: HTMLElement; } & { currentTarget: HTMLFormElement; target: Element; }) {
     ev.preventDefault();
@@ -136,13 +132,21 @@ const App: Component = () => {
     (document.getElementById("formName") as HTMLElement).focus();
   }
 
+  function handleOpenAside(ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element; }): void {
+    ev.preventDefault();
+    // const modal = document.getElementById("modalRef");
+    // console.log(modal?.getRootNode())
+    // const activeElement = document.activeElement;
+    setIsAsideOpen(!isAsideOpen());
+  }
+
   return (
     <>
       <div class={`@container h-screen ${styles.app}`}>
         <header class={`${styles.header} px-8 py-4 mb-1 z-10`}>
           <div class="flex items-center w-full justify-between">
             <div class="flex gap-4 items-baseline place-content-center justify-center">
-              <button onClick={(ev) => setIsAsideOpen(!isAsideOpen())} title="Main Menu" class="grid z-10 border border-transparent h-4 place-self-center">
+              <button onClick={ev => handleOpenAside(ev)} title="Main Menu" class="grid z-10 border border-transparent h-4 place-self-center">
                 <div class="w-5 h-[2px] bg-foreground"></div>
                 <div class="w-5 h-[2px] bg-foreground"></div>
                 <div class="w-5 h-[2px] bg-foreground"></div>
@@ -205,7 +209,7 @@ const App: Component = () => {
                     <div class="group_items">
                       <Show when={items[1] as unknown as TDatabaseExpense[]}>
                         <For each={items[1] as unknown as TDatabaseExpense[]}>
-                          {(item) => <ListItem item={item} />}
+                          {(item) => <ListItem item={item} setIsItemModalOpen={setIsItemModalOpen} />}
                         </For>
                       </Show>
                     </div>
