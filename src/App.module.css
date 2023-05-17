@@ -23,9 +23,9 @@ main.main {
 
 aside.aside {
   grid-area: aside;
-  @apply z-30 flex flex-col justify-between;
-  @apply bg-background h-screen left-0 min-w-max;
-  @apply max-w-xs;
+  @apply z-30;
+  @apply bg-background;
+  @apply h-screen left-0 bottom-0 top-0;
   width: 222px;
 }
 
