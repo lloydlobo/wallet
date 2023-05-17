@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 *,*::before,*::after{
-  /* @apply outline-red-50/30 dark:outline-red-950/30 outline; */
+  /* @apply outline-violet-200/30 dark:outline-violet-200/30 outline; */
 }
 
 body {
@@ -15,10 +15,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-header {
-  display: grid;
-  text-align: start;
-}
+/* header { */
+/*   display: grid; */
+/*   text-align: start; */
+/* } */
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',

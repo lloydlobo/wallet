@@ -4,6 +4,7 @@ import {
   createEffect,
   createSignal,
   For,
+  onCleanup,
   Show
 } from "solid-js";
 import { JSX } from "solid-js/jsx-runtime";
@@ -82,7 +83,13 @@ const App: Component = () => {
   const { formStore, updateFormField, submit, clearField } = useForm();
   const [expenses, setExpenses] = createSignal<TDatabaseExpense[] | null>(null);
   const [groupedState, setGroupedState] = createSignal<TGroupedExpense[] | null>(null);
+
+  //TODO: Create store for tracking global state of toggles aside or modals.
   const [isFormOpen, setIsFormOpen] = createSignal<boolean>(false);
+  const [isAsideOpen, setIsAsideOpen] = createSignal<boolean>(true);
+  const [isModalOpen, setIsModalOpen] = createSignal(false); // HACK: Pass this to ListItem for temporary fix.
+
+  let asideRef: HTMLDivElement | ((el: HTMLDivElement) => void) | undefined;
 
   createEffect(async () => {
     const data = await getDB();
@@ -94,6 +101,28 @@ const App: Component = () => {
     if (!grouped) return;
     setGroupedState(Object.entries(grouped));
   });
+
+  createEffect(() => {
+    if (isAsideOpen()) {
+      console.log("open");
+      document.addEventListener("keydown", handleEscapeKey);
+    }
+    onCleanup(() => { document.removeEventListener("keydown", handleEscapeKey); })
+  })
+
+  function handleEscapeKey(this: Document, ev: KeyboardEvent) {
+    ev.preventDefault();
+    console.log(ev.key);
+    // alert!(ev.key);
+    // TODO: See if window width is less than breakpoint `md`.
+    // FIXME: If both aside and any modal is open, on Escape both will close.
+    if (isAsideOpen() && !isFormOpen()) {
+      if (ev.key === "Escape") {
+        setIsAsideOpen(false);
+      }
+    }
+  }
+
 
   async function handleSubmitForm(ev: Event & { submitter: HTMLElement; } & { currentTarget: HTMLFormElement; target: Element; }) {
     ev.preventDefault();
@@ -108,33 +137,15 @@ const App: Component = () => {
   }
 
   return (
-    <div class="@container h-screen">
-      <div class="container border! h-full flex flex-col justify-between max-w-lg @md:max-w-3xl space-y-0 mx-auto py-8!">
-        <aside class="absolute min-w-md flex flex-col justify-between w-full max-w-[200px] bg-background h-screen left-0">
-          <div class="grid [&>button]:rounded-e-full mt-16 text-lg [&>*]:tracking-wide">
-            <button class={styles.button}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke:currentColor;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-              <div class="settings">Activity</div>
-            </button>
-            <button class={styles.button}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke:currentColor;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-              <div class="settings">Settings</div>
-            </button>
-          </div>
-
-          <div class="border border-transparent border-t-muted-foreground/50">
-            <div class={`${styles.button} rounded-e-full my-2 text-lg`}>
-              <ThemeToggle />
-            </div>
-          </div>
-        </aside>
-        <header class="py-4">
+    <>
+      <div class={`@container h-screen ${styles.app}`}>
+        <header class={`${styles.header} px-8 py-4 mb-1 z-10`}>
           <div class="flex items-center w-full justify-between">
             <div class="flex gap-4 items-baseline place-content-center justify-center">
-              <button title="Main Menu" class="grid border border-transparent h-4 place-self-center">
-                <div class="w-5 h-[2px] bg-foreground/50"></div>
-                <div class="w-5 h-[2px] bg-foreground/50"></div>
-                <div class="w-5 h-[2px] bg-foreground/50"></div>
+              <button onClick={(ev) => setIsAsideOpen(!isAsideOpen())} title="Main Menu" class="grid z-10 border border-transparent h-4 place-self-center">
+                <div class="w-5 h-[2px] bg-foreground"></div>
+                <div class="w-5 h-[2px] bg-foreground"></div>
+                <div class="w-5 h-[2px] bg-foreground"></div>
               </button>
               <div class="flex gap-[6px] leading-none items-center relative">
                 <div class="logo text-xl leading-none text-foreground/70 capitalize ">wallet</div>
@@ -143,149 +154,177 @@ const App: Component = () => {
             </div>
 
             <div class="nav-end grid items-center gap-4 grid-flow-col">
-              <div class=""><ThemeToggle /></div>
-              <button class="scale-150 text-muted-foreground">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-circle-2" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke:currentColor;"><path d="M18 20a6 6 0 0 0-12 0"></path><circle cx="12" cy="10" r="4"></circle><circle cx="12" cy="12" r="10"></circle></svg>
+              <div class="hidden"><ThemeToggle /></div>
+              <button class="text-muted-foreground">
+                <svg xmlns="http://www.w3.org/2000/svg" width={24 + 12} height={24 + 12} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-circle-2" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke:currentColor;"><path d="M18 20a6 6 0 0 0-12 0"></path><circle cx="12" cy="10" r="4"></circle><circle cx="12" cy="12" r="10"></circle></svg>
               </button>
             </div>
           </div>
         </header>
 
-        <div class={styles.list_window}>
-          <Show when={formStore}>
-            <pre class="debug hidden">{JSON.stringify(formStore, null, 2)}</pre>
-          </Show>
+        <Show when={isAsideOpen()}>
+          <aside class={`${styles.aside} absolute md:relative`}>
+            <div aria-label="aside-backdrop" class="-z-10 md:hidden absolute bg-blend-overlay w-screen h-screen bg-foreground/40"></div>
+            <div ref={asideRef} class="z-10 w-full bg-background h-full">
+              <div class="grid [&>button]:rounded-e-full mt-2 text-lg [&>*]:tracking-wide">
+                <button class={styles.button}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke:currentColor;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                  <div class="settings">Activity</div>
+                </button>
+                <button class={styles.button}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke:currentColor;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  <div class="settings">Settings</div>
+                </button>
+              </div>
 
-          <Show when={groupedState()}>
-            <For
-              each={groupedState() as unknown[] as [string, TDatabaseExpense[]]}
-            >
-              {(items) => (
-                <section class="bg-card rounded-xl border! p-4! space-y-1">
-                  <h2 class="text-sm tracking-tighter text-muted-foreground">
-                    {items[0] as string}
-                  </h2>
-                  <div class="group_items">
-                    <Show when={items[1] as unknown as TDatabaseExpense[]}>
-                      <For each={items[1] as unknown as TDatabaseExpense[]}>
-                        {(item) => <ListItem item={item} />}
-                      </For>
-                    </Show>
-                  </div>
-                </section>
-              )}
-            </For>
-          </Show>
+              <div class="border border-transparent border-t-muted-foreground/50">
+                <div class={`${styles.button} rounded-e-full my-2 text-lg`}>
+                  <ThemeToggle />
+                </div>
+              </div>
+            </div>
+          </aside>
+        </Show>
 
-          {/*
+
+        <main class={`${styles.main} ${isAsideOpen() ? "ms-[200px]!" : ""} container border! h-full flex flex-col justify-between max-w-lg @md:max-w-4xl px-8 space-y-0 mx-auto py-8!`}>
+          <div class={styles.list_window}>
+            <Show when={formStore}>
+              <pre class="debug hidden">{JSON.stringify(formStore, null, 2)}</pre>
+            </Show>
+
+            <Show when={groupedState()}>
+              <For
+                each={groupedState() as unknown[] as [string, TDatabaseExpense[]]}
+              >
+                {(items) => (
+                  <section class="bg-card rounded-xl border! p-4! space-y-1">
+                    <h2 class="text-sm tracking-tighter text-muted-foreground">
+                      {items[0] as string}
+                    </h2>
+                    <div class="group_items">
+                      <Show when={items[1] as unknown as TDatabaseExpense[]}>
+                        <For each={items[1] as unknown as TDatabaseExpense[]}>
+                          {(item) => <ListItem item={item} />}
+                        </For>
+                      </Show>
+                    </div>
+                  </section>
+                )}
+              </For>
+            </Show>
+
+            {/*
             <input type="number" min="1" placeholder="Enter Numeric Id" onInput={(e) => setUserId(e.currentTarget.value)} />
             <span>{user.loading && "Loading..."}</span>
             <div> <pre>{JSON.stringify(user(), null, 2)}</pre> </div>
           */}
-        </div>
+          </div>
 
-        <div class="place-self-end flex-shrink-0 top-full m-0 sticky bottom-0 bg-slate-100 dark:bg-slate-900 pb-8 py-4 mx-0 px-12! px-4 left-0 right-0 w-full">
-          <Show
-            when={isFormOpen()}
-            fallback={
-              <div class="flex h-fit w-full gap-4 mx-auto">
-                <input type="text" onClick={(ev) => handleShowForm(ev)} placeholder="Add new expense&#x2026;" class="border py-4 px-4 rounded-[50px] w-full bg-background" />
-                <button type="submit"><PlusIcon /></button>
-              </div>
-            }
-          >
-            <form
-              onSubmit={(ev) => handleSubmitForm(ev)}
-              class="flex h-fit w-full gap-4 mx-auto"
+          <div class="place-self-end flex-shrink-0 top-full! m-0 sticky bottom-0 bg-slate-100 dark:bg-slate-900 pb-8 py-4 mx-0 px-12! px-4 left-0 right-0 w-full">
+            <Show
+              when={isFormOpen()}
+              fallback={
+                <div class="flex h-fit w-full gap-4 mx-auto">
+                  <input type="text" onClick={(ev) => handleShowForm(ev)} placeholder="Add new expense&#x2026;" class="border py-4 px-4 rounded-[50px] w-full bg-background" />
+                  <button type="submit"><PlusIcon /></button>
+                </div>
+              }
             >
-              <div class="border py-2 px-4 [&>*>*]:border-transparent gap-2 [&>*>*]:border-b-muted rounded-[50px] w-full bg-background max-w-3xl!">
-                <div class={styles.formControl}>
-                  <label for="formName">Name</label>
-                  <input
-                    id="formName"
-                    type="text"
-                    autofocus={true}
-                    placeholder="Expense"
-                    value={formStore.name}
-                    onInput={updateFormField("name")} // use onChange for less control on reactivity or more performance.
-                    required // use:validate={[userNameExists]} value={newTitle()} onInput={(e) => setTitle(e.currentTarget.value)}
-                  />
-                  {/*
+              <form
+                onSubmit={(ev) => handleSubmitForm(ev)}
+                class="flex h-fit w-full gap-4 mx-auto"
+              >
+                <div class="border py-2 px-4 [&>*>*]:border-transparent gap-2 [&>*>*]:border-b-muted rounded-[50px] w-full bg-background max-w-3xl!">
+                  <div class={styles.formControl}>
+                    <label for="formName">Name</label>
+                    <input
+                      id="formName"
+                      type="text"
+                      autofocus={true}
+                      placeholder="Expense"
+                      value={formStore.name}
+                      onInput={updateFormField("name")} // use onChange for less control on reactivity or more performance.
+                      required // use:validate={[userNameExists]} value={newTitle()} onInput={(e) => setTitle(e.currentTarget.value)}
+                    />
+                    {/*
                 {errors.email && <ErrorMessage error={errors.email} />}
                 */}
-                </div>
-                <div class={styles.formControl}>
-                  <label for="formAmount">Amount</label>
-                  <input
-                    // value={formStore.amount}
-                    onInput={updateFormField("amount")}
-                    id="formAmount"
-                    type="number"
-                    placeholder="Amount"
-                    class="form-input"
-                    required
-                  />
-                </div>
-                {/*
+                  </div>
+                  <div class={styles.formControl}>
+                    <label for="formAmount">Amount</label>
+                    <input
+                      // value={formStore.amount}
+                      onInput={updateFormField("amount")}
+                      id="formAmount"
+                      type="number"
+                      placeholder="Amount"
+                      class="form-input"
+                      required
+                    />
+                  </div>
+                  {/*
                 {errors.confirmPassword && <ErrorMessage error={errors.confirmPassword} />}
                 */}
-                <div class={styles.formControl}>
-                  <label for="formAmount">Transaction Date</label>
+                  <div class={styles.formControl}>
+                    <label for="formAmount">Transaction Date</label>
 
-                  <input
-                    value={formStore.transaction_date ?? asHTMLInputDateValue(new Date())}
-                    onChange={updateFormField("transaction_date")}
-                    type="date" placeholder="Amount" class="w-fit" />
-                </div>
-                <div class={styles.formControl}>
-                  <label for="formAmount">Description</label>
-                  <textarea
-                    value={formStore.description ?? ""}
-                    onInput={updateFormField("description")}
-                    placeholder="Description"
-                    class="form-textarea h-12"
-                  />
-                </div>
-                <div class={styles.formControl}>
-                  <label for="isCashCheckbox">Cash</label>
-                  <input
-                    checked={formStore.is_cash}
-                    onChange={updateFormField("is_cash")}
-                    type="checkbox"
-                    id="isCashCheckbox"
-                  // class="form-checkbox dark:invert dark:bg-background rounded"
-                  />
-                </div>
-              </div>
-              <div class="grid">
-                <button title="Submit form" class="" type="submit">
-                  <PlusIcon />
-                </button>
-                <button
-                  class=""
-                  type="button"
-                  onClick={(ev) => {
-                    ev.preventDefault();
-                    setIsFormOpen(false);
-                    for (const key of Object.keys(formStore)) {
-                      clearField(key);
-                    } // [ "amount", "created_at", "description", "is_cash", "name", "transaction_date", "updated_at" ]
-                  }}
-                >
-                  <div title="Reset form" class="rotate-[45deg]">
-                    <PlusIcon />
+                    <input
+                      value={formStore.transaction_date ?? asHTMLInputDateValue(new Date())}
+                      onChange={updateFormField("transaction_date")}
+                      type="date" placeholder="Amount" class="w-fit" />
                   </div>
-                </button>
-              </div>
-            </form>
-          </Show>
-        </div>
+                  <div class={styles.formControl}>
+                    <label for="formAmount">Description</label>
+                    <textarea
+                      value={formStore.description ?? ""}
+                      onInput={updateFormField("description")}
+                      placeholder="Description"
+                      class="form-textarea h-12"
+                    />
+                  </div>
+                  <div class={styles.formControl}>
+                    <label for="isCashCheckbox">Cash</label>
+                    <input
+                      checked={formStore.is_cash}
+                      onChange={updateFormField("is_cash")}
+                      type="checkbox"
+                      id="isCashCheckbox"
+                    // class="form-checkbox dark:invert dark:bg-background rounded"
+                    />
+                  </div>
+                </div>
+                <div class="grid">
+                  <button title="Submit form" class="" type="submit">
+                    <PlusIcon />
+                  </button>
+                  <button
+                    class=""
+                    type="button"
+                    onClick={(ev) => {
+                      ev.preventDefault();
+                      setIsFormOpen(false);
+                      for (const key of Object.keys(formStore)) {
+                        clearField(key);
+                      } // [ "amount", "created_at", "description", "is_cash", "name", "transaction_date", "updated_at" ]
+                    }}
+                  >
+                    <div title="Reset form" class="rotate-[45deg]">
+                      <PlusIcon />
+                    </div>
+                  </button>
+                </div>
+              </form>
+            </Show>
+          </div>
+        </main>
       </div>
-    </div>
+    </>
   );
 };
 
 export default App;
+
 
 // function Card(): JSX.Element {
 //   return (
