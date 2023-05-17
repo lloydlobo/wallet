@@ -91,14 +91,8 @@ const App: Component = () => {
   const [isItemModalOpen, setIsItemModalOpen] = createSignal(false); // HACK: Pass this to ListItem for temporary fix.
 
   let asideRef: HTMLDivElement | ((el: HTMLDivElement) => void) | undefined;
-  let asideOverlayRef: HTMLDivElement | ((el: HTMLDivElement) => void) | undefined;
+  let asideOverlayRef: HTMLDivElement | undefined;
 
-  createEffect(() => {
-    if (!isItemModalOpen() && isAsideOpen() && asideRef instanceof HTMLElement) {
-      document.addEventListener("keydown", handleEscapeKey);
-    }
-    onCleanup(() => { document.removeEventListener("keydown", handleEscapeKey); })
-  })
 
   createEffect(async () => {
     const data = await getDB();
@@ -110,6 +104,30 @@ const App: Component = () => {
     if (!grouped) return;
     setGroupedState(Object.entries(grouped));
   });
+
+  createEffect(() => {
+    if (!isItemModalOpen() && isAsideOpen() && asideRef instanceof HTMLElement) {
+      document.addEventListener("keydown", closeAsideOnEscape);
+      if (asideOverlayRef) {
+        asideOverlayRef.addEventListener("touchstart", closeAsideOnOverlayInteraction);
+        asideOverlayRef.addEventListener("mousedown", closeAsideOnOverlayInteraction);
+      }
+    }
+    onCleanup(() => {
+      document.removeEventListener("keydown", closeAsideOnEscape);
+      if (asideOverlayRef) {
+        asideOverlayRef.removeEventListener("touchstart", closeAsideOnOverlayInteraction);
+        asideOverlayRef.removeEventListener("mousedown", closeAsideOnOverlayInteraction);
+      }
+    });
+  });
+
+  const closeAsideOnOverlayInteraction = () => setIsAsideOpen(false);;
+  const closeAsideOnEscape = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+      setIsAsideOpen(false);
+    }
+  };
 
   function handleEscapeKey(this: Document, ev: KeyboardEvent) {
     ev.preventDefault();
@@ -140,22 +158,6 @@ const App: Component = () => {
     setIsAsideOpen(!isAsideOpen());
   }
 
-  /** 
-   * Close the aside sidebar if the document overlay is clicked outside of aside.
-   */
-  function handleToggleAsideOnOutsideClick(ev: MouseEvent & { currentTarget: HTMLDivElement; target: Element; }): void {
-    if (!asideRef) return;
-
-    const rect = (asideRef as HTMLDivElement).getBoundingClientRect();
-    const mouse = { x: ev.clientX, y: ev.clientY, };
-    const isClickedOutside = mouse.x < rect.left || mouse.x > rect.right || mouse.y < rect.top || mouse.y > rect.bottom;
-
-    if (isClickedOutside) {
-      setIsAsideOpen(false);
-    }
-  }
-
-
   return (
     <>
       <div class={`@container h-screen ${styles.app}`}>
@@ -185,7 +187,7 @@ const App: Component = () => {
         <Show when={isAsideOpen()}>
           <aside class={`${styles.aside} absolute md:relative`}>
             {/* TODO: rome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
-            <div ref={asideOverlayRef} onClick={(ev) => handleToggleAsideOnOutsideClick(ev)} aria-label="aside-backdrop" class="-z-10 md:hidden absolute bg-blend-overlay w-screen h-screen bg-foreground/40"></div>
+            <div ref={asideOverlayRef} aria-label="aside-backdrop" class="-z-10 md:hidden absolute bg-blend-overlay w-screen h-screen bg-foreground/40"></div>
             <div ref={asideRef} class="z-10 w-full bg-background h-full">
               <div class="grid [&>button]:rounded-e-full mt-2 text-lg [&>*]:tracking-wide">
                 <button class={styles.button}>
@@ -345,6 +347,8 @@ const App: Component = () => {
 };
 
 export default App;
+
+
 
 
 // function Card(): JSX.Element {
