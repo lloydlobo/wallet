@@ -3,18 +3,24 @@
 }
 
 .app {
+  display: flex;
+  flex-direction: column;
+}
+
+.app.open{
   display: grid;
   grid-template-areas: 
     "header header"
-    "aside main";
-  /* If aside is not Show then auto collapses and 1fr remains*/
-  grid-template-columns: auto 1fr;
-  grid-template-rows: auto 1fr;
+    "main main";
+  grid-template-columns: 1fr;
+}
+
+main.main.open{
+  margin-inline-start: 222px;
 }
 
 header.header {
   grid-area: header;
-  /* display:none; */
 }
 
 main.main {
@@ -22,12 +28,32 @@ main.main {
 }
 
 aside.aside {
+  /* Default styles */
   grid-area: aside;
+  transition: transform 0.3s ease-out;
+  transform: translateX(-150%); /* Off-screen by default */
+  position: absolute;
+  width: 222px;
   @apply z-30;
   @apply bg-background;
   @apply h-screen left-0 bottom-0 top-0;
-  width: 222px;
 }
+
+aside.aside.open {
+  transform: translateX(0); /* Slide in when open */
+}
+
+@media (max-width: 640px) {
+  .app.open {
+    display:flex;
+    flex-direction: column;
+  }
+
+  main.main.open{
+    margin-inline-start: 0;
+  }
+}
+
 
 button.button,
 div.button {
@@ -55,7 +81,6 @@ div.button {
   85% {transform: translateX(65%) rotate(240deg) scale(0.9);}
   100% {transform: translateX(80%) rotate(360deg) scale(0.8);}
 }
-
 
 /* form { */
 /*   width: 350px; */

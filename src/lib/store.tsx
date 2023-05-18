@@ -1,6 +1,5 @@
 import { createEffect } from "solid-js";
 import { createStore, SetStoreFunction, Store } from "solid-js/store";
-import { TDatabaseExpense } from "./types-supabase";
 
 /*
  * 

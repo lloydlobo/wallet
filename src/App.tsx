@@ -9,16 +9,16 @@ import {
   Show
 } from "solid-js";
 import { JSX } from "solid-js/jsx-runtime";
-import styles from "./App.module.css";
-import { PlusIcon } from "./components/icons";
-import { ListItem } from "./components/ListItem";
-import { ThemeToggle } from "./components/ThemeToggle";
-import { asDateComponents, asHTMLInputDateValue } from "./lib/date";
-import { getDB } from "./lib/db/controllers";
-import { Ordering } from "./lib/enums";
-import { useForm } from "./lib/hooks/use-form";
-import { radixSort } from "./lib/radix-sort";
-import { TDatabaseExpense } from "./lib/types-supabase";
+import styles from "@/App.module.css";
+import { PlusIcon } from "@/components/icons";
+import { ListItem } from "@/components/ListItem";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { asDateComponents, asHTMLInputDateValue } from "@/lib/date";
+import { getDB } from "@/lib/db/controllers";
+import { Ordering } from "@/lib/enums";
+import { useForm } from "@/lib/hooks/use-form";
+import { radixSort } from "@/lib/radix-sort";
+import { TDatabaseExpense } from "@/lib/types-supabase";
 
 
 type TodoItem = { title: string; done: boolean };
@@ -163,8 +163,8 @@ const App: Component = () => {
 
 
   return (
-    <div class={`@container h-screen ${styles.app}`}>
-      <header class={`${styles.header} px-8 py-4 mb-1 z-10`}>
+    <div class={`@container h-screen ${styles.app} ${styles.open}`}>
+      <header class={`${styles.header} border px-8 py-4 mb-1 z-10`}>
         <div class="flex items-center w-full justify-between">
           <div class="flex gap-4 items-baseline place-content-center justify-center">
             <button type="button" onClick={handleOpenAsideMenu} title="Main Menu" class="grid z-10 border border-transparent h-4 place-self-center">
@@ -174,7 +174,7 @@ const App: Component = () => {
             </button>
             <div class="flex gap-[6px] leading-none items-center relative">
               <div class="logo text-xl leading-none text-foreground/70 capitalize ">wallet</div>
-              <span class="outline outline-[2.3px] rounded py-0.5 font-semibold text-blue-500 opacity-95 outline-blue-500/70 text-[11px] px-1">Beta</span>
+              <span class="outline outline-[2.3px] rounded-sm py-0.5 font-semibold text-blue-500 opacity-95 outline-blue-500/70 text-[11px] px-1">Beta</span>
             </div>
           </div>
 
@@ -186,10 +186,16 @@ const App: Component = () => {
         </div>
       </header>
 
+      {/* 
       <Show when={isAsideOpen()}>
-        <aside class={`${styles.aside} absolute md:relative`}>
-          {/* TODO: rome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
-          <div ref={asideOverlayRef} aria-label="aside-backdrop" class="-z-10 md:hidden inset-0 absolute bg-blend-overlay w-screen h-screen bg-foreground/40"></div>
+      */}
+      <div class="relative">
+        <aside class={`${styles.aside} transition-transform ${isAsideOpen() ? styles.open + '' : ''}`}>
+          {/* Sidebar content */}
+          <div
+            ref={asideOverlayRef}
+            aria-label="aside-backdrop"
+            class={`${isAsideOpen() ? styles.open + ' opacity-70' : '-translate-x-full opacity-0'} transition-transform transition-opacity duration-300 delay-100 ease-in -z-10 md:hidden inset-0 absolute bg-blend-overlay w-screen h-screen bg-foreground/40`}></div>
           <div ref={asideRef} class="z-10 pb-20 flex flex-col justify-between h-full bg-background">
             <div class="grid [&>button]:rounded-e-full mt-2 text-lg [&>*]:tracking-wide">
               <button class={styles.button}>
@@ -209,141 +215,145 @@ const App: Component = () => {
             </div>
           </div>
         </aside>
+
+        {/* 
       </Show>
+      */}
 
 
-      {/* PERF: Use margin inline start to position main content wrt aside, for smooth transitions */}
-      <main class={`${styles.main} ${isAsideOpen() ? "ms-[200px]!" : ""} container border! h-full flex flex-col justify-between max-w-lg @md:max-w-4xl px-8 space-y-0 mx-auto py-8!`}>
-        <div class={styles.list_window}>
-          <Show when={formStore}>
-            <pre class="debug hidden">{JSON.stringify(formStore, null, 2)}</pre>
-          </Show>
+        {/* PERF: Use margin inline start to position main content wrt aside, for smooth transitions */}
+        <main class={`${styles.main} ${isAsideOpen() ? styles.open : ""} container border! h-full flex flex-col justify-between max-w-lg @md:max-w-4xl px-8 space-y-0 mx-auto py-8!`}>
+          <div class={styles.list_window}>
+            <Show when={formStore}>
+              <pre class="debug hidden">{JSON.stringify(formStore, null, 2)}</pre>
+            </Show>
 
-          <Show when={groupedState()}>
-            <For
-              each={groupedState() as unknown[] as [string, TDatabaseExpense[]]}
-            >
-              {(items) => (
-                <section class="bg-card rounded-xl border! p-4! space-y-1">
-                  <h2 class="text-sm tracking-tighter text-muted-foreground">
-                    {items[0] as string}
-                  </h2>
-                  <div class="group_items">
-                    <Show when={items[1] as unknown as TDatabaseExpense[]}>
-                      <For each={items[1] as unknown as TDatabaseExpense[]}>
-                        {(item) => <ListItem item={item} setIsItemModalOpen={setIsItemModalOpen} />}
-                      </For>
-                    </Show>
-                  </div>
-                </section>
-              )}
-            </For>
-          </Show>
+            <Show when={groupedState()}>
+              <For
+                each={groupedState() as unknown[] as [string, TDatabaseExpense[]]}
+              >
+                {(items) => (
+                  <section class="bg-card rounded-xl border! p-4! space-y-1">
+                    <h2 class="text-sm tracking-tighter text-muted-foreground">
+                      {items[0] as string}
+                    </h2>
+                    <div class="group_items">
+                      <Show when={items[1] as unknown as TDatabaseExpense[]}>
+                        <For each={items[1] as unknown as TDatabaseExpense[]}>
+                          {(item) => <ListItem item={item} setIsItemModalOpen={setIsItemModalOpen} />}
+                        </For>
+                      </Show>
+                    </div>
+                  </section>
+                )}
+              </For>
+            </Show>
 
-          {/*
+            {/*
             <input type="number" min="1" placeholder="Enter Numeric Id" onInput={(e) => setUserId(e.currentTarget.value)} />
             <span>{user.loading && "Loading..."}</span>
             <div> <pre>{JSON.stringify(user(), null, 2)}</pre> </div>
           */}
-        </div>
+          </div>
 
-        <div class="place-self-end flex-shrink-0 top-full! m-0 sticky bottom-0 bg-slate-100 dark:bg-slate-900 pb-8 py-4 mx-0 px-12! px-4 left-0 right-0 w-full">
-          <Show
-            when={isFormOpen()}
-            fallback={
-              <div class="flex h-fit w-full gap-4 mx-auto">
-                <input type="text" onClick={(ev) => handleShowForm(ev)} placeholder="Add new expense&#x2026;" class="border py-4 px-4 rounded-[50px] w-full bg-background" />
-                <button type="submit"><PlusIcon /></button>
-              </div>
-            }
-          >
-            <form
-              onSubmit={(ev) => handleSubmitForm(ev)}
-              class="flex h-fit w-full gap-4 mx-auto"
+          <div class="place-self-end flex-shrink-0 top-full! m-0 sticky bottom-0 bg-slate-100 dark:bg-slate-900 pb-8 py-4 mx-0 px-12! px-4 left-0 right-0 w-full">
+            <Show
+              when={isFormOpen()}
+              fallback={
+                <div class="flex h-fit w-full gap-4 mx-auto">
+                  <input type="text" onClick={(ev) => handleShowForm(ev)} placeholder="Add new expense&#x2026;" class="border py-4 px-4 rounded-[50px] w-full bg-background" />
+                  <button type="submit"><PlusIcon /></button>
+                </div>
+              }
             >
-              <div class="border py-2 px-4 [&>*>*]:border-transparent gap-2 [&>*>*]:border-b-muted rounded-[50px] w-full bg-background max-w-3xl!">
-                <div class={styles.formControl}>
-                  <label for="formName">Name</label>
-                  <input
-                    id="formName"
-                    type="text"
-                    autofocus={true}
-                    placeholder="Expense"
-                    value={formStore.name}
-                    onInput={updateFormField("name")} // use onChange for less control on reactivity or more performance.
-                    required // use:validate={[userNameExists]} value={newTitle()} onInput={(e) => setTitle(e.currentTarget.value)}
-                  />
-                  {/*
+              <form
+                onSubmit={(ev) => handleSubmitForm(ev)}
+                class="flex h-fit w-full gap-4 mx-auto"
+              >
+                <div class="border py-2 px-4 [&>*>*]:border-transparent gap-2 [&>*>*]:border-b-muted rounded-[50px] w-full bg-background max-w-3xl!">
+                  <div class={styles.formControl}>
+                    <label for="formName">Name</label>
+                    <input
+                      id="formName"
+                      type="text"
+                      autofocus={true}
+                      placeholder="Expense"
+                      value={formStore.name}
+                      onInput={updateFormField("name")} // use onChange for less control on reactivity or more performance.
+                      required // use:validate={[userNameExists]} value={newTitle()} onInput={(e) => setTitle(e.currentTarget.value)}
+                    />
+                    {/*
                 {errors.email && <ErrorMessage error={errors.email} />}
                 */}
-                </div>
-                <div class={styles.formControl}>
-                  <label for="formAmount">Amount</label>
-                  <input
-                    // value={formStore.amount}
-                    onInput={updateFormField("amount")}
-                    id="formAmount"
-                    type="number"
-                    placeholder="Amount"
-                    class="form-input"
-                    required
-                  />
-                </div>
-                {/*
+                  </div>
+                  <div class={styles.formControl}>
+                    <label for="formAmount">Amount</label>
+                    <input
+                      // value={formStore.amount}
+                      onInput={updateFormField("amount")}
+                      id="formAmount"
+                      type="number"
+                      placeholder="Amount"
+                      class="form-input"
+                      required
+                    />
+                  </div>
+                  {/*
                 {errors.confirmPassword && <ErrorMessage error={errors.confirmPassword} />}
                 */}
-                <div class={styles.formControl}>
-                  <label for="formAmount">Transaction Date</label>
+                  <div class={styles.formControl}>
+                    <label for="formAmount">Transaction Date</label>
 
-                  <input
-                    value={formStore.transaction_date ?? asHTMLInputDateValue(new Date())}
-                    onChange={updateFormField("transaction_date")}
-                    type="date" placeholder="Amount" class="w-fit" />
-                </div>
-                <div class={styles.formControl}>
-                  <label for="formAmount">Description</label>
-                  <textarea
-                    value={formStore.description ?? ""}
-                    onInput={updateFormField("description")}
-                    placeholder="Description"
-                    class="form-textarea h-12"
-                  />
-                </div>
-                <div class={styles.formControl}>
-                  <label for="isCashCheckbox">Cash</label>
-                  <input
-                    checked={formStore.is_cash}
-                    onChange={updateFormField("is_cash")}
-                    type="checkbox"
-                    id="isCashCheckbox"
-                  // class="form-checkbox dark:invert dark:bg-background rounded"
-                  />
-                </div>
-              </div>
-              <div class="grid">
-                <button title="Submit form" class="" type="submit">
-                  <PlusIcon />
-                </button>
-                <button
-                  class=""
-                  type="button"
-                  onClick={(ev) => {
-                    ev.preventDefault();
-                    setIsFormOpen(false);
-                    for (const key of Object.keys(formStore)) {
-                      clearField(key);
-                    } // [ "amount", "created_at", "description", "is_cash", "name", "transaction_date", "updated_at" ]
-                  }}
-                >
-                  <div title="Reset form" class="rotate-[45deg]">
-                    <PlusIcon />
+                    <input
+                      value={formStore.transaction_date ?? asHTMLInputDateValue(new Date())}
+                      onChange={updateFormField("transaction_date")}
+                      type="date" placeholder="Amount" class="w-fit" />
                   </div>
-                </button>
-              </div>
-            </form>
-          </Show>
-        </div>
-      </main>
+                  <div class={styles.formControl}>
+                    <label for="formAmount">Description</label>
+                    <textarea
+                      value={formStore.description ?? ""}
+                      onInput={updateFormField("description")}
+                      placeholder="Description"
+                      class="form-textarea h-12"
+                    />
+                  </div>
+                  <div class={styles.formControl}>
+                    <label for="isCashCheckbox">Cash</label>
+                    <input
+                      checked={formStore.is_cash}
+                      onChange={updateFormField("is_cash")}
+                      type="checkbox"
+                      id="isCashCheckbox"
+                    // class="form-checkbox dark:invert dark:bg-background rounded"
+                    />
+                  </div>
+                </div>
+                <div class="grid">
+                  <button title="Submit form" class="" type="submit">
+                    <PlusIcon />
+                  </button>
+                  <button
+                    class=""
+                    type="button"
+                    onClick={(ev) => {
+                      ev.preventDefault();
+                      setIsFormOpen(false);
+                      for (const key of Object.keys(formStore)) {
+                        clearField(key);
+                      } // [ "amount", "created_at", "description", "is_cash", "name", "transaction_date", "updated_at" ]
+                    }}
+                  >
+                    <div title="Reset form" class="rotate-[45deg]">
+                      <PlusIcon />
+                    </div>
+                  </button>
+                </div>
+              </form>
+            </Show>
+          </div>
+        </main>
+      </div>
     </div>
   );
 };
