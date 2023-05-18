@@ -1,5 +1,5 @@
 import styles from "@/App.module.css";
-import { HamburgerIcon, PlusIcon } from "@/components/icons";
+import { CrossIcon, HamburgerIcon, PlusIcon } from "@/components/icons";
 import { ListItem } from "@/components/ListItem";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { asHTMLInputDateValue } from "@/lib/date";
@@ -15,30 +15,28 @@ import {
   For,
   onCleanup,
   onMount,
-  Show
+  Show,
 } from "solid-js";
 import { JSX } from "solid-js/jsx-runtime";
 import { Skeleton } from "./components/ui/skeleton";
-import { cn } from "./lib/cn";
 
 type TGroupedExpense = [string, TDatabaseExpense[]];
 
 async function fetchUser(id: unknown) {
   return (await fetch(`https://swapi.dev/api/people/${id}/`)).json();
-}// fetcher: ResourceFetcher<true, unknown, unknown>, options: InitializedResourceOptions<unknown, true>
+} // fetcher: ResourceFetcher<true, unknown, unknown>, options: InitializedResourceOptions<unknown, true>
 
 const ErrorMessage = (props: {
   error:
-  | number
-  | boolean
-  | Node
-  | JSX.ArrayElement
-  | JSX.FunctionElement
-  | (string & {})
-  | null
-  | undefined;
+    | number
+    | boolean
+    | Node
+    | JSX.ArrayElement
+    | JSX.FunctionElement
+    | (string & {})
+    | null
+    | undefined;
 }) => <span class="error-message">{props.error}</span>;
-
 
 /**
  * Group the items based on months and years using the reduce() method.
@@ -48,27 +46,23 @@ const ErrorMessage = (props: {
  */
 function groupedItems(items: TDatabaseExpense[] | null) {
   if (items) {
-    return items.reduce(
-      (acc: { [key: string]: TDatabaseExpense[]; }, item) => {
-        const month = new Date(item.transaction_date ?? "").toLocaleString(
-          "default",
-          { month: "long" }
-        );
-        const year = new Date(item.transaction_date ?? "")
-          .getFullYear()
-          .toString();
-        const key = `${month} ${year}`;
-        if (!acc[key]) {
-          acc[key] = [];
-        }
-        acc[key].push(item);
-        return acc;
-      },
-      {}
-    );
+    return items.reduce((acc: { [key: string]: TDatabaseExpense[] }, item) => {
+      const month = new Date(item.transaction_date ?? "").toLocaleString(
+        "default",
+        { month: "long" }
+      );
+      const year = new Date(item.transaction_date ?? "")
+        .getFullYear()
+        .toString();
+      const key = `${month} ${year}`;
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(item);
+      return acc;
+    }, {});
   }
 }
-
 
 // Note: Effects are meant primarily for side effects that read but don't write to the reactive system:
 // it's best to avoid setting signals in effects, which without care can cause additional rendering
@@ -84,31 +78,49 @@ const App: Component = () => {
   const { formStore, updateFormField, submit, clearField } = useForm();
 
   const [expenses, setExpenses] = createSignal<TDatabaseExpense[] | null>(null);
-  const [groupedState, setGroupedState] = createSignal<TGroupedExpense[] | null>(null);
+  const [groupedState, setGroupedState] = createSignal<
+    TGroupedExpense[] | null
+  >(null);
 
   const [isFormOpen, setIsFormOpen] = createSignal<boolean>(false);
   const [isAsideOpen, setIsAsideOpen] = createSignal<boolean>(false);
   const [isItemModalOpen, setIsItemModalOpen] = createSignal(false);
 
-  const breakpointSM = 640;// tailwind sm:640px.
+  const breakpointSM = 640; // tailwind sm:640px.
 
   let asideRef: HTMLDivElement | undefined;
   let asideOverlayRef: HTMLDivElement | undefined;
 
   createEffect(() => {
-    if (!isItemModalOpen() && isAsideOpen() && asideRef instanceof HTMLElement) {
+    if (
+      !isItemModalOpen() &&
+      isAsideOpen() &&
+      asideRef instanceof HTMLElement
+    ) {
       document.addEventListener("keydown", closeAsideOnEscape);
       if (asideOverlayRef) {
-        asideOverlayRef.addEventListener("touchstart", closeAsideOnOverlayInteraction);
-        asideOverlayRef.addEventListener("mousedown", closeAsideOnOverlayInteraction);
+        asideOverlayRef.addEventListener(
+          "touchstart",
+          closeAsideOnOverlayInteraction
+        );
+        asideOverlayRef.addEventListener(
+          "mousedown",
+          closeAsideOnOverlayInteraction
+        );
       }
     }
 
     onCleanup(() => {
       document.removeEventListener("keydown", closeAsideOnEscape);
       if (asideOverlayRef) {
-        asideOverlayRef.removeEventListener("touchstart", closeAsideOnOverlayInteraction);
-        asideOverlayRef.removeEventListener("mousedown", closeAsideOnOverlayInteraction);
+        asideOverlayRef.removeEventListener(
+          "touchstart",
+          closeAsideOnOverlayInteraction
+        );
+        asideOverlayRef.removeEventListener(
+          "mousedown",
+          closeAsideOnOverlayInteraction
+        );
       }
     });
   });
@@ -128,11 +140,11 @@ const App: Component = () => {
     window.addEventListener("resize", handleResize);
     onCleanup(() => {
       window.removeEventListener("resize", handleResize);
-    })
-  })
+    });
+  });
 
-  const toggleSidebar = () => setIsAsideOpen(prev => !prev);
-  const closeAsideOnOverlayInteraction = () => setIsAsideOpen(false);;
+  const toggleSidebar = () => setIsAsideOpen((prev) => !prev);
+  const closeAsideOnOverlayInteraction = () => setIsAsideOpen(false);
   const handleOpenAsideMenu = () => setIsAsideOpen(!isAsideOpen());
   const closeAsideOnEscape = (event: KeyboardEvent) => {
     if (event.key === "Escape") {
@@ -144,39 +156,72 @@ const App: Component = () => {
     if (isSmScreen() && isAsideOpen()) {
       toggleSidebar();
     } else if (!isSmScreen && !isAsideOpen()) {
-      toggleSidebar()
+      toggleSidebar();
     }
   }
 
-  async function handleSubmitForm(ev: Event & { submitter: HTMLElement; } & { currentTarget: HTMLFormElement; target: Element; }) {
+  async function handleSubmitForm(
+    ev: Event & { submitter: HTMLElement } & {
+      currentTarget: HTMLFormElement;
+      target: Element;
+    }
+  ) {
     ev.preventDefault();
     await submit(formStore);
     setIsFormOpen(false);
   }
 
-  function handleShowForm(ev: MouseEvent & { currentTarget: HTMLInputElement; target: Element }): void {
+  function handleShowForm(
+    ev: MouseEvent & { currentTarget: HTMLInputElement; target: Element }
+  ): void {
     ev.preventDefault();
     setIsFormOpen((_prev) => true);
     (document.getElementById("formName") as HTMLElement).focus();
   }
 
   return (
-    <div class={`@container h-screen ${styles.app} ${styles.open}`}>
-      <header class={`${styles.header} border px-8 py-4 mb-1 z-10`}>
-        <div class="flex items-center w-full justify-between">
-          <div class="flex gap-4 items-center place-content-center justify-center">
-            <button type="button" onClick={handleOpenAsideMenu} title="Main Menu" class="grid z-10 border border-transparent place-self-center">
+    <div class={`h-screen @container ${styles.app} ${styles.open}`}>
+      <header class={`${styles.header} z-10 mb-1 border px-8 py-4`}>
+        <div class="flex w-full items-center justify-between">
+          <div class="flex place-content-center items-center justify-center gap-4">
+            <button
+              type="button"
+              onClick={handleOpenAsideMenu}
+              title="Main Menu"
+              class="z-10 grid place-self-center border border-transparent"
+            >
               <HamburgerIcon />
             </button>
-            <div class="flex gap-[6px] leading-none items-center relative">
-              <div class="logo text-xl leading-none text-foreground/70 capitalize ">wallet</div>
-              <span class="outline outline-[2.3px] rounded-sm py-0.5 font-semibold text-blue-500 opacity-95 outline-blue-500/70 text-[11px] px-1">Beta</span>
+            <div class="relative flex items-center gap-[6px] leading-none">
+              <div class="logo text-xl capitalize leading-none text-foreground/70 ">
+                wallet
+              </div>
+              <span class="rounded-sm px-1 py-0.5 text-[11px] font-semibold text-blue-500 opacity-95 outline outline-[2.3px] outline-blue-500/70">
+                Beta
+              </span>
             </div>
           </div>
 
-          <div class="nav-end grid items-center gap-4 grid-flow-col">
+          <div class="nav-end grid grid-flow-col items-center gap-4">
             <button class="text-muted-foreground">
-              <svg xmlns="http://www.w3.org/2000/svg" width={24 + 12} height={24 + 12} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-circle-2" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke:currentColor;"><path d="M18 20a6 6 0 0 0-12 0"></path><circle cx="12" cy="10" r="4"></circle><circle cx="12" cy="12" r="10"></circle></svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width={24 + 12}
+                height={24 + 12}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-user-circle-2"
+                data-darkreader-inline-stroke=""
+                style="--darkreader-inline-stroke:currentColor;"
+              >
+                <path d="M18 20a6 6 0 0 0-12 0"></path>
+                <circle cx="12" cy="10" r="4"></circle>
+                <circle cx="12" cy="12" r="10"></circle>
+              </svg>
             </button>
           </div>
         </div>
@@ -186,26 +231,69 @@ const App: Component = () => {
       <Show when={isAsideOpen()}>
       */}
       <div class="relative">
-        <aside class={`${styles.aside} transition-transform ${isAsideOpen() ? styles.open + '' : ''}`}>
+        <aside
+          class={`${styles.aside} transition-transform ${
+            isAsideOpen() ? styles.open + "" : ""
+          }`}
+        >
           {/* Sidebar content */}
           <div
             ref={asideOverlayRef}
             aria-label="aside-backdrop"
-            class={`${isAsideOpen() ? styles.open + ' opacity-70' : '-translate-x-full opacity-0'} transition-transform transition-opacity duration-300 delay-100 ease-in -z-10 md:hidden inset-0 absolute bg-blend-overlay w-screen h-screen bg-foreground/40`}></div>
-          <div ref={asideRef} class="z-10 pb-20 flex flex-col justify-between h-full bg-background">
-            <div class="grid [&>button]:rounded-e-full mt-2 text-lg [&>*]:tracking-wide">
+            class={`${
+              isAsideOpen()
+                ? styles.open + " opacity-70"
+                : "-translate-x-full opacity-0"
+            } absolute inset-0 -z-10 h-screen w-screen bg-foreground/40 bg-blend-overlay transition-opacity transition-transform duration-300 delay-100 ease-in md:hidden`}
+          ></div>
+          <div
+            ref={asideRef}
+            class="z-10 flex h-full flex-col justify-between bg-background pb-20"
+          >
+            <div class="mt-2 grid text-lg [&>*]:tracking-wide [&>button]:rounded-e-full">
               <button class={styles.button}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke:currentColor;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-activity"
+                  data-darkreader-inline-stroke=""
+                  style="--darkreader-inline-stroke:currentColor;"
+                >
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
                 <div class="settings">Activity</div>
               </button>
               <button class={styles.button}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings" data-darkreader-inline-stroke="" style="--darkreader-inline-stroke:currentColor;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="lucide lucide-settings"
+                  data-darkreader-inline-stroke=""
+                  style="--darkreader-inline-stroke:currentColor;"
+                >
+                  <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
                 <div class="settings">Settings</div>
               </button>
             </div>
 
             <div class="border border-transparent border-t-muted-foreground/50 ">
-              <button class={`${styles.button} rounded-e-full text-lg  my-2 `}>
+              <button class={`${styles.button} my-2 rounded-e-full  text-lg `}>
                 <ThemeToggle />
               </button>
             </div>
@@ -216,42 +304,57 @@ const App: Component = () => {
       </Show>
       */}
 
-
         {/* PERF: Use margin inline start to position main content wrt aside, for smooth transitions */}
-        <main class={`${styles.main} ${isAsideOpen() ? styles.open : ""} [&>*]:bg-muted  container border! h-full flex flex-col justify-between max-w-lg @md:max-w-4xl px-8 space-y-0 mx-auto py-8!`}>
+        <main
+          class={`${styles.main} ${
+            isAsideOpen() ? styles.open : ""
+          } border!  py-8! container mx-auto flex h-full max-w-lg flex-col justify-between space-y-0 px-8 @md:max-w-4xl [&>*]:bg-muted`}
+        >
           <div class={styles.list_window}>
             <Show when={formStore}>
-              <pre class="debug hidden">{JSON.stringify(formStore, null, 2)}</pre>
+              <pre class="debug hidden">
+                {JSON.stringify(formStore, null, 2)}
+              </pre>
             </Show>
 
-            <Show when={groupedState()}
+            <Show
+              when={groupedState()}
               fallback={
                 <For each={Array.from({ length: 4 })}>
-                  {(_) => (<section
-                    class="flex transition-all bg-card rounded-xl mx-auto justify-center! items-center space-x-4"
-                    style={{ "padding-block": "2rem" }}
-                  >
-                    <Skeleton class={"h-12 w-12 rounded-full"} />
-                    <div class="space-y-2">
-                      <Skeleton class={"h-4 w-[250px]"} />
-                      <Skeleton class={"h-4 w-[200px]"} />
-                    </div>
-                  </section>)}
+                  {(_) => (
+                    <section
+                      class="justify-center! mx-auto flex items-center space-x-4 rounded-xl bg-card transition-all"
+                      style={{ "padding-block": "2rem" }}
+                    >
+                      <Skeleton class={"h-12 w-12 rounded-full"} />
+                      <div class="space-y-2">
+                        <Skeleton class={"h-4 w-[250px]"} />
+                        <Skeleton class={"h-4 w-[200px]"} />
+                      </div>
+                    </section>
+                  )}
                 </For>
               }
             >
               <For
-                each={groupedState() as unknown[] as [string, TDatabaseExpense[]]}
+                each={
+                  groupedState() as unknown[] as [string, TDatabaseExpense[]]
+                }
               >
                 {(items) => (
-                  <section class="bg-card rounded-xl border! p-4! space-y-1">
+                  <section class="border! p-4! space-y-1 rounded-xl bg-card">
                     <h2 class="text-sm! tracking-tighter text-muted-foreground">
                       {items[0] as string}
                     </h2>
                     <div class="group_items">
                       <Show when={items[1] as unknown as TDatabaseExpense[]}>
                         <For each={items[1] as unknown as TDatabaseExpense[]}>
-                          {(item) => <ListItem item={item} setIsItemModalOpen={setIsItemModalOpen} />}
+                          {(item) => (
+                            <ListItem
+                              item={item}
+                              setIsItemModalOpen={setIsItemModalOpen}
+                            />
+                          )}
                         </For>
                       </Show>
                     </div>
@@ -267,21 +370,28 @@ const App: Component = () => {
           */}
           </div>
 
-          <div class="place-self-end flex-shrink-0 top-full! m-0 sticky bottom-0 bg-background pb-8 py-4 mx-0 px-12! px-4 left-0 right-0 w-full">
+          <div class="top-full! px-12! sticky bottom-0 left-0 right-0 m-0 mx-0 w-full flex-shrink-0 place-self-end bg-background px-4 py-4 pb-8">
             <Show
               when={isFormOpen()}
               fallback={
-                <div class="flex h-fit w-full gap-4 mx-auto">
-                  <input type="text" onClick={(ev) => handleShowForm(ev)} placeholder="Add new expense&#x2026;" class="border py-4 px-4 rounded-[50px] w-full bg-background" />
-                  <button type="submit"><PlusIcon /></button>
+                <div class="mx-auto flex h-fit w-full gap-4">
+                  <input
+                    type="text"
+                    onClick={(ev) => handleShowForm(ev)}
+                    placeholder="Add new expense&#x2026;"
+                    class="w-full rounded-[50px] border bg-background px-4 py-4"
+                  />
+                  <button type="submit">
+                    <PlusIcon />
+                  </button>
                 </div>
               }
             >
               <form
                 onSubmit={(ev) => handleSubmitForm(ev)}
-                class="flex h-fit w-full gap-4 mx-auto"
+                class="mx-auto flex h-fit w-full gap-4"
               >
-                <div class="border py-2 px-4 [&>*>*]:border-transparent gap-2 [&>*>*]:border-b-muted rounded-[50px] w-full bg-background max-w-3xl!">
+                <div class="max-w-3xl! w-full gap-2 rounded-[50px] border bg-background px-4 py-2 [&>*>*]:border-transparent [&>*>*]:border-b-muted">
                   <div class={styles.formControl}>
                     <label for="formName">Name</label>
                     <input
@@ -316,9 +426,15 @@ const App: Component = () => {
                     <label for="formAmount">Transaction Date</label>
 
                     <input
-                      value={formStore.transaction_date ?? asHTMLInputDateValue(new Date())}
+                      value={
+                        formStore.transaction_date ??
+                        asHTMLInputDateValue(new Date())
+                      }
                       onChange={updateFormField("transaction_date")}
-                      type="date" placeholder="Amount" class="w-fit" />
+                      type="date"
+                      placeholder="Amount"
+                      class="w-fit"
+                    />
                   </div>
                   <div class={styles.formControl}>
                     <label for="formAmount">Description</label>
@@ -336,7 +452,7 @@ const App: Component = () => {
                       onChange={updateFormField("is_cash")}
                       type="checkbox"
                       id="isCashCheckbox"
-                    // class="form-checkbox dark:invert dark:bg-background rounded"
+                      // class="form-checkbox dark:invert dark:bg-background rounded"
                     />
                   </div>
                 </div>
@@ -355,8 +471,8 @@ const App: Component = () => {
                       } // [ "amount", "created_at", "description", "is_cash", "name", "transaction_date", "updated_at" ]
                     }}
                   >
-                    <div title="Reset form" class="rotate-[45deg]">
-                      <PlusIcon />
+                    <div title="Reset form" class="">
+                      <CrossIcon />
                     </div>
                   </button>
                 </div>
@@ -370,10 +486,6 @@ const App: Component = () => {
 };
 
 export default App;
-
-
-
-
 
 // function Card(): JSX.Element {
 //   return (

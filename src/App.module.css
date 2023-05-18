@@ -7,16 +7,16 @@
   flex-direction: column;
 }
 
-.app.open{
+.app.open {
   display: grid;
-  grid-template-areas: 
+  grid-template-areas:
     "header header"
     "main main";
   grid-template-columns: 1fr;
   grid-template-rows: auto 1fr;
 }
 
-main.main.open{
+main.main.open {
   margin-inline-start: 222px;
 }
 
@@ -37,7 +37,7 @@ aside.aside {
   width: 222px;
   @apply z-30;
   @apply bg-background;
-  @apply h-screen left-0 bottom-0 top-0;
+  @apply bottom-0 left-0 top-0 h-screen;
 }
 
 aside.aside.open {
@@ -46,11 +46,11 @@ aside.aside.open {
 
 @media (max-width: 640px) {
   .app.open {
-    display:flex;
+    display: flex;
     flex-direction: column;
   }
 
-  main.main.open{
+  main.main.open {
     margin-inline-start: 0;
   }
 }
@@ -63,10 +63,10 @@ div.button {
   }
 }
 
-button.button{
-  @apply flex gap-4 items-center;
+button.button {
+  @apply flex items-center gap-4;
   @apply hover:bg-muted;
-  @apply py-4 ps-6 w-full;
+  @apply w-full py-4 ps-6;
 }
 
 div.button {
@@ -76,10 +76,18 @@ div.button {
 }
 
 @keyframes spinslide {
-  0% {transform: translateX(0%) rotate(72deg);}
-  25% {transform: translateX(25%) rotate(180deg);}
-  85% {transform: translateX(65%) rotate(240deg) scale(0.9);}
-  100% {transform: translateX(80%) rotate(360deg) scale(0.8);}
+  0% {
+    transform: translateX(0%) rotate(72deg);
+  }
+  25% {
+    transform: translateX(25%) rotate(180deg);
+  }
+  85% {
+    transform: translateX(65%) rotate(240deg) scale(0.9);
+  }
+  100% {
+    transform: translateX(80%) rotate(360deg) scale(0.8);
+  }
 }
 
 /* form { */
@@ -90,23 +98,23 @@ div.button {
 /* } */
 
 form .formControl {
-  display:grid;
+  display: grid;
   grid-template-columns: 14ch 1fr;
   justify-content: space-between;
   align-items: center;
-  @apply px-2 mb-2;
+  @apply mb-2 px-2;
   @apply gap-2;
 
   > label {
     text-align: left;
-    @apply text-muted-foreground text-sm tracking-wide;
+    @apply text-sm tracking-wide text-muted-foreground;
   }
 
-  >  input[type="checkbox"]{
+  > input[type="checkbox"] {
     margin-inline-start: 1ch;
   }
 
-  >  input[type="number"]{
+  > input[type="number"] {
     @apply font-mono;
     &::placeholder {
       font-family: sans-serif;
@@ -118,8 +126,8 @@ form .formControl {
   /* @apply bg-background ; */
   /* @apply bg-destructive; */
   @apply rounded-t-[28px];
-  @apply py-8 scroll-m-8;
-  @apply flex-shrink h-full;
+  @apply scroll-m-8 py-8;
+  @apply h-full flex-shrink;
   @apply overflow-y-auto;
 
   &::-webkit-scrollbar {
@@ -130,7 +138,7 @@ form .formControl {
   &::-webkit-scrollbar-thumb {
     @apply bg-muted-foreground/10;
     @apply rounded-full;
-    @apply py-4 my-4;
+    @apply my-4 py-4;
   }
 
   &::-webkit-scrollbar-track {
@@ -139,12 +147,12 @@ form .formControl {
     @apply rounded-sm;
   }
 }
-  
+
 .list_window section {
-    @apply bg-background;
-    @apply h-fit;
-    @apply mx-4 mb-4 p-6;
-    @apply rounded-3xl;
+  @apply bg-background;
+  @apply h-fit;
+  @apply mx-4 mb-4 p-6;
+  @apply rounded-3xl;
 }
 
 .workspace {
@@ -155,7 +163,7 @@ form .formControl {
   /* @apply space-y-6; */
   /* @apply rounded-[28px]; */
   /* @apply pt-8; */
-	/* @media (prefers-color-scheme: dark) { } */
+  /* @media (prefers-color-scheme: dark) { } */
 }
 
 /* .workspace section { */
@@ -166,13 +174,11 @@ form .formControl {
 /**/
 /* } */
 
-
 .logo {
   animation: logo-spin infinite 20s linear;
   height: 40vmin;
   pointer-events: none;
 }
-
 
 .link {
   color: #b318f0;

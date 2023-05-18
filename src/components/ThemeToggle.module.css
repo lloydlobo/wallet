@@ -1,22 +1,22 @@
-	.ThemeToggle #themeToggle + label {
-		@apply inline-block;
-		@apply top-0 right-0;
-		@apply cursor-pointer;
-		@apply h-4 w-4;
-		@apply absolute;
-		@apply rounded-full;
-		@apply duration-300;
-		@apply content-[''];
-	}
+.ThemeToggle #themeToggle + label {
+  @apply inline-block;
+  @apply right-0 top-0;
+  @apply cursor-pointer;
+  @apply h-4 w-4;
+  @apply absolute;
+  @apply rounded-full;
+  @apply duration-300;
+  @apply content-[''];
+}
 
 .ThemeToggle #themeToggle input {
-  @apply appearance-none p-0 flex opacity-0 justify-center rounded-full;
+  @apply flex appearance-none justify-center rounded-full p-0 opacity-0;
 }
 .ThemeToggle #themeToggle:not(:checked) + label {
-		@apply bg-amber-400;
-	}
+  @apply bg-amber-400;
+}
 
 .ThemeToggle #themeToggle:checked + label {
-		@apply bg-transparent;
-		box-shadow: inset -18px -16px 1px 1px #ddd;
-	}
+  @apply bg-transparent;
+  box-shadow: inset -18px -16px 1px 1px #ddd;
+}

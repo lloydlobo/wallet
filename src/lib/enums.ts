@@ -6,6 +6,5 @@ export enum Ordering {
 }
 
 export enum Databases {
-  DB_NAME_EXPENSES = "expenses"
+  DB_NAME_EXPENSES = "expenses",
 }
-

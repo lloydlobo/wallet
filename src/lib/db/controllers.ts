@@ -13,38 +13,37 @@ export async function getDB(): Promise<TDatabaseExpense[] | null | undefined> {
 
 export async function getName() {
   let { data: expenses, error } = await supabase
-    .from('expenses')
-    .select('name');
+    .from("expenses")
+    .select("name");
   console.log(expenses);
 }
 
 export async function insertRowsDB<T extends object>(rows: T[]) {
-  const { data, error } = await supabase
-    .from('expenses')
-    .insert(rows);
+  const { data, error } = await supabase.from("expenses").insert(rows);
   if (error) {
-    console.error('Error inserting row:', error);
+    console.error("Error inserting row:", error);
     return;
   }
 
-  console.log('New row inserted:', data);
+  console.log("New row inserted:", data);
 }
 
 export async function deleteRowsDB() {
   const { data, error } = await supabase
-    .from('expenses')
+    .from("expenses")
     .delete()
-    .eq('some_column', 'someValue').select();
-  console.log(data, error)
+    .eq("some_column", "someValue")
+    .select();
+  console.log(data, error);
 }
 
 export async function updateRowsDB() {
   const { data, error } = await supabase
-    .from('expenses')
+    .from("expenses")
     // .update({ name: 'Coca Cola' })
     // .eq('name', 'Coke')
-    .update({ name: 'Coke' })
-    .eq('name', 'Coca Cola')
+    .update({ name: "Coke" })
+    .eq("name", "Coca Cola")
     .select(); // Note: to update the record and return it use `.select()`.
   console.log(data, error);
 }

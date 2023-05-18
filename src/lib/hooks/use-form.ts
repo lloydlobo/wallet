@@ -19,7 +19,7 @@ const submit = async (formStore: Partial<TDatabaseExpense>) => {
 
   // NOTE: Submit to back-end server or database.
   const VITE_SUPABASE_OWNER = import.meta.env.VITE_SUPABASE_OWNER;
-  const now = new Date;
+  const now = new Date();
   const dataWithOwnerToSubmit: Partial<TDatabaseExpense> = {
     name: formStore.name,
     description: formStore.description,
@@ -29,9 +29,9 @@ const submit = async (formStore: Partial<TDatabaseExpense>) => {
     created_at: now.toISOString(),
     updated_at: now.toISOString(),
     transaction_date: formStore.transaction_date ?? now.toISOString(),
-  }
-  await insertRowsDB([dataWithOwnerToSubmit])
-}
+  };
+  await insertRowsDB([dataWithOwnerToSubmit]);
+};
 
 export function useForm() {
   const now = new Date().toISOString();
@@ -45,28 +45,26 @@ export function useForm() {
     updated_at: now,
   });
 
-
   // Reusable function to update the store based on the name of the property field.
   const updateFormField = (fieldName: string) => (ev: Event) => {
     const inputElement = ev?.currentTarget as HTMLInputElement;
     if (inputElement.type === "checkbox") {
       setFormStore({
-        [fieldName]: !!inputElement.checked
-      })
+        [fieldName]: !!inputElement.checked,
+      });
     } else {
       setFormStore({
-        [fieldName]: inputElement.value
-      })
+        [fieldName]: inputElement.value,
+      });
     }
-  }
+  };
 
   const clearField = (fieldName: string) => {
     // FIXME: Would it automatically parse non-string values, like boolean of is_cash?
     setFormStore({
-      [fieldName]: ""
+      [fieldName]: "",
     });
   };
 
   return { formStore, submit, updateFormField, clearField };
 }
-

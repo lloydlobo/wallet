@@ -77,7 +77,7 @@ function countingSort(props: CountingSort): TDatabaseExpense[] {
         item.transaction_date ?? item.created_at ?? item.updated_at
       ).getTime() /
         props.divisor) %
-      10
+        10
     );
 
     counts[digit].push(item);
