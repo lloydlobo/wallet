@@ -2,24 +2,144 @@
   text-align: center;
 }
 
-button.button{
-  @apply flex gap-4 items-center;
-  @apply hover:bg-muted;
-  @apply py-4 ps-6 w-full;
+.app {
+  display: flex;
+  flex-direction: column;
+  max-height: 100vh;
+  padding-block-end: 16px;
+  @apply pb-6;
+  /* justify-content: space-between; */
+}
 
-  /* > svg { */
-  /*   @apply col-span-1; */
-  /* } */
-  /**/
-  /* > div { */
-  /*   @apply col-span-2; */
-  /* } */
+header.header {
+  grid-area: header;
+}
+
+aside.aside {
+  /* Default styles */
+  grid-area: aside;
+  transition: transform 0.3s ease-out;
+  transform: translateX(-150%); /* Off-screen by default */
+  position: absolute;
+  width: 222px;
+  @apply z-30;
+  @apply bg-background;
+  @apply bottom-0 left-0 top-0 h-screen;
+}
+
+/* Use margin inline start to position main content wrt aside, for smooth transitions  */
+main.main {
+  grid-area: main;
+  margin-inline: 16px;
+  border-radius: 24px;
+  @apply container mx-auto border;
+  @apply  pb-6 ;
+  @apply  mb-6 ;
+}
+
+.app.open {
+  display: grid;
+  grid-template-areas:
+    "header header"
+    "main main";
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+}
+
+  /* NOTE: Animating with opacity, and transform is faster and smoother. */
+main.main.open {
+  /* transform: translateX(222px); */
+    margin-inline-start: 222px;
+}
+
+aside.aside.open {
+  transform: translateX(0); /* Slide in when open */
+}
+
+@media (max-width: 640px) {
+  .app.open {
+    display: flex;
+    flex-direction: column;
+  }
+
+  main.main {
+    /* border-radius: 0; */
+  }
+
+  main.main.open {
+    margin-inline-start: 0;
+    /* transform: translateX(0); */
+  }
+  /* TODO: With js/ts, toggle out open for mobile screen by default */
+}
+
+
+.list_window {
+  /* @apply rounded-t-[28px]; */
+  @apply  max-h-[72vh] md:max-h-[68vh] h-full flex-shrink;
+  /* @apply absolute bottom-0 top-0 h-screen;  */
+  @apply overflow-y-auto;
+  /* @apply mt-6; */
+  @apply scroll-m-6 py-6;
+
+  > section {
+    @apply bg-background;
+    @apply h-fit;
+    @apply mx-1 mb-4 p-6;
+    @apply rounded-3xl;
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    @apply rounded-full;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/10;
+    @apply rounded-full;
+    @apply my-4 py-4;
+  }
+
+  &::-webkit-scrollbar-track {
+    /* Same as background. Keeping it subtle */
+    @apply bg-transparent;
+    @apply rounded-sm;
+  }
+}
+
+button.button,
+div.button {
+  &:hover > svg {
+    @apply col-span-1;
+    animation: 3s infinite alternate spinslide;
+  }
+}
+
+button.button {
+  @apply flex items-center gap-4;
+  @apply hover:bg-muted;
+  @apply w-full py-4 ps-6;
 }
 
 div.button {
-  /* @apply grid grid-cols-[4px,1fr]; */
   @apply hover:bg-muted;
-  @apply py-4 w-full;
+  @apply py-4;
+  /* @apply pe-8 ; */
+}
+
+@keyframes spinslide {
+  0% {
+    transform: translateX(0%) rotate(72deg);
+  }
+  25% {
+    transform: translateX(25%) rotate(180deg);
+  }
+  85% {
+    transform: translateX(65%) rotate(240deg) scale(0.9);
+  }
+  100% {
+    transform: translateX(80%) rotate(360deg) scale(0.8);
+  }
 }
 
 /* form { */
@@ -30,23 +150,23 @@ div.button {
 /* } */
 
 form .formControl {
-  display:grid;
+  display: grid;
   grid-template-columns: 14ch 1fr;
   justify-content: space-between;
   align-items: center;
-  @apply px-2 mb-2;
+  @apply mb-2 px-2;
   @apply gap-2;
 
   > label {
     text-align: left;
-    @apply text-muted-foreground text-sm tracking-wide;
+    @apply text-sm tracking-wide text-muted-foreground;
   }
 
-  >  input[type="checkbox"]{
+  > input[type="checkbox"] {
     margin-inline-start: 1ch;
   }
 
-  >  input[type="number"]{
+  > input[type="number"] {
     @apply font-mono;
     &::placeholder {
       font-family: sans-serif;
@@ -54,76 +174,31 @@ form .formControl {
   }
 }
 
-.list_window {
-  @apply bg-muted;
-  @apply rounded-t-[28px];
-  @apply py-8 scroll-m-8;
-  @apply flex-shrink h-full;
-  @apply overflow-y-auto;
 
-  &::-webkit-scrollbar {
-    width: 6px;
-    @apply rounded-full;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/10;
-    @apply rounded-full;
-    @apply py-4 my-4;
-  }
-
-  &::-webkit-scrollbar-track {
-    /* Same as background. Keeping it subtle */
-    @apply bg-transparent;
-    @apply rounded-sm;
-  }
-}
-  
-.list_window section {
-    @apply bg-background;
-    @apply h-fit;
-    @apply mx-4 mb-4 p-6;
-    @apply rounded-3xl;
-}
 
 .workspace {
   overflow-y: auto;
   /* @apply grid grid-flow-row-dense max-h-[88vh] mx-0 min-h-[88vh] overflow-y-auto; */
   /* @apply block max-h-[88vh] mx-0 min-h-[88vh] overflow-y-auto; */
-  @apply block  mx-0  overflow-y-auto;
+  /* @apply block  mx-0  overflow-y-auto; */
   /* @apply space-y-6; */
-  @apply rounded-[28px];
-  @apply pt-8;
-
-
-
-	@media (prefers-color-scheme: dark) { }
+  /* @apply rounded-[28px]; */
+  /* @apply pt-8; */
+  /* @media (prefers-color-scheme: dark) { } */
 }
 
-.workspace section {
-    @apply bg-background;
-    @apply h-fit;
-    @apply mx-4 mb-4 p-8;
-    @apply rounded-3xl;
-  
-}
-
+/* .workspace section { */
+/*     @apply bg-background; */
+/*     @apply h-fit; */
+/*     @apply mx-4 mb-4 p-8; */
+/*     @apply rounded-3xl; */
+/**/
+/* } */
 
 .logo {
   animation: logo-spin infinite 20s linear;
   height: 40vmin;
   pointer-events: none;
-}
-
-.header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
 
 .link {

@@ -1,6 +1,5 @@
 import { createEffect } from "solid-js";
 import { createStore, SetStoreFunction, Store } from "solid-js/store";
-import { TDatabaseExpense } from "./types-supabase";
 
 /*
  * 
@@ -27,11 +26,11 @@ import { TDatabaseExpense } from "./types-supabase";
 
 export function createLocalStoreTodos<T extends object>(
   name: string,
-  init: T,
+  init: T
 ): [Store<T>, SetStoreFunction<T>] {
   const localState = localStorage.getItem(name);
   const [state, setState] = createStore<T>(
-    localState ? JSON.parse(localState) : init,
+    localState ? JSON.parse(localState) : init
   );
 
   createEffect(() => localStorage.setItem(name, JSON.stringify(state)));
@@ -52,11 +51,11 @@ export type LocalStoreExpenses<T> = Partial<T>;
 // export function createLocalStore<T extends Record<string, unknown>>(
 export function createLocalStore<T extends object>(
   key: string,
-  init: T,
+  init: T
 ): [Store<T>, SetStoreFunction<T>] {
   const localState: string | null = localStorage.getItem(key);
   const [state, setState] = createStore<T>(
-    localState ? JSON.parse(localState) : init,
+    localState ? JSON.parse(localState) : init
   );
   createEffect(() => localStorage.setItem(key, JSON.stringify(state)));
 

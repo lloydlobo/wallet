@@ -7,4 +7,3 @@ export type Expense = {
   owner: string;
 };
 // export type Data = { count: number; next: null; previous: null; results: Expense[] };
-
