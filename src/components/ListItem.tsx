@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { stylesInput, Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/cn";
 import { asDateComponents, asDayOfWeek } from "@/lib/date";
+import { deleteRowsDB } from "@/lib/db/controllers";
 import { TDatabaseExpense } from "@/lib/types-supabase";
 import {
   createEffect,
@@ -219,7 +220,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
               <Textarea
                 value={props.item.description ?? ""}
                 ref={formTextareaRef}
-                // class="form-textarea  border-transparent border-b-muted"
+              // class="form-textarea  border-transparent border-b-muted"
               />
               <Input
                 type="date"
@@ -245,7 +246,11 @@ export function ListItem(props: ListItemProps): JSX.Element {
                 <div class="shell"></div>
                 <div class="flex gap-4">
                   <button
-                    onClick={(ev) => setShowModal(false)}
+                    onClick={(ev) => {
+                      ev.preventDefault();
+                      deleteRowsDB({ id: props.item.id.toString() })
+                      return setShowModal(false);
+                    }}
                     class="text-destructive"
                     type="submit"
                   >
