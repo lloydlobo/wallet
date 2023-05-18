@@ -1,5 +1,11 @@
 import styles from "@/App.module.css";
-import { CrossIcon, HamburgerIcon, PlusIcon } from "@/components/icons";
+import {
+  ActivityIcon,
+  CrossIcon,
+  HamburgerIcon,
+  PlusIcon,
+  SettingsIcon,
+} from "@/components/icons";
 import { ListItem } from "@/components/ListItem";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { asHTMLInputDateValue } from "@/lib/date";
@@ -28,14 +34,14 @@ async function fetchUser(id: unknown) {
 
 const ErrorMessage = (props: {
   error:
-    | number
-    | boolean
-    | Node
-    | JSX.ArrayElement
-    | JSX.FunctionElement
-    | (string & {})
-    | null
-    | undefined;
+  | number
+  | boolean
+  | Node
+  | JSX.ArrayElement
+  | JSX.FunctionElement
+  | (string & {})
+  | null
+  | undefined;
 }) => <span class="error-message">{props.error}</span>;
 
 /**
@@ -64,16 +70,6 @@ function groupedItems(items: TDatabaseExpense[] | null) {
   }
 }
 
-// Note: Effects are meant primarily for side effects that read but don't write to the reactive system:
-// it's best to avoid setting signals in effects, which without care can cause additional rendering
-// or even infinite effect loops. Instead, prefer using createMemo to compute new values that depend
-// on other reactive values, so the reactive system knows what depends on what, and can optimize accordingly
-//
-// const [todos, setTodos] = createLocalStoreTodos<TodoItem[]>("todos", []);
-// createEffect(() => { if (formStore.sameAsAddress) { clearField("shippingAddress") } })
-// const [userId, setUserId] = createSignal();
-// const [user] = createResource(userId, fetchUser);
-//
 const App: Component = () => {
   const { formStore, updateFormField, submit, clearField } = useForm();
 
@@ -83,7 +79,7 @@ const App: Component = () => {
   >(null);
 
   const [isFormOpen, setIsFormOpen] = createSignal<boolean>(false);
-  const [isAsideOpen, setIsAsideOpen] = createSignal<boolean>(false);
+  const [isAsideOpen, setIsAsideOpen] = createSignal<boolean>(true);
   const [isItemModalOpen, setIsItemModalOpen] = createSignal(false);
 
   const breakpointSM = 640; // tailwind sm:640px.
@@ -136,7 +132,11 @@ const App: Component = () => {
     setGroupedState(Object.entries(grouped));
   });
 
+  const isSmScreen = (): boolean => !(window.innerWidth >= breakpointSM);
   onMount(() => {
+    if (isSmScreen() && isAsideOpen()) {
+      toggleSidebar();
+    }
     window.addEventListener("resize", handleResize);
     onCleanup(() => {
       window.removeEventListener("resize", handleResize);
@@ -152,7 +152,6 @@ const App: Component = () => {
     }
   };
   function handleResize(this: Window, ev: UIEvent) {
-    const isSmScreen = (): boolean => !(window.innerWidth >= breakpointSM);
     if (isSmScreen() && isAsideOpen()) {
       toggleSidebar();
     } else if (!isSmScreen && !isAsideOpen()) {
@@ -181,7 +180,7 @@ const App: Component = () => {
 
   return (
     <div class={`h-screen @container ${styles.app} ${styles.open}`}>
-      <header class={`${styles.header} z-10 mb-1 border px-8 py-4`}>
+      <header class={`${styles.header} border! z-10 mb-1! px-8 py-4`}>
         <div class="flex w-full items-center justify-between">
           <div class="flex place-content-center items-center justify-center gap-4">
             <button
@@ -227,67 +226,34 @@ const App: Component = () => {
         </div>
       </header>
 
-      {/* 
-      <Show when={isAsideOpen()}>
-      */}
+      {/* <Show when={isAsideOpen()}> */}
       <div class="relative">
         <aside
-          class={`${styles.aside} transition-transform ${
-            isAsideOpen() ? styles.open + "" : ""
-          }`}
+          class={`${styles.aside} transition-transform ${isAsideOpen() ? styles.open + "" : ""
+            }`}
         >
-          {/* Sidebar content */}
+          {/* Sidebar Overlay */}
           <div
             ref={asideOverlayRef}
             aria-label="aside-backdrop"
-            class={`${
-              isAsideOpen()
-                ? styles.open + " opacity-70"
-                : "-translate-x-full opacity-0"
-            } absolute inset-0 -z-10 h-screen w-screen bg-foreground/40 bg-blend-overlay transition-opacity transition-transform duration-300 delay-100 ease-in md:hidden`}
-          ></div>
+            class={`${isAsideOpen()
+              ? styles.open + "delay-0 blur-none duration-150 ease-linear opacity-70  transition-all"
+              : "-translate-x-full delay-0 blur-2xl transition-all opacity-0 duration-100  "
+              } absolute inset-0 -z-10 h-screen w-screen bg-muted/70 bg-blend-overlay ease md:hidden`}
+          />
+
+          {/* Sidebar Content */}
           <div
             ref={asideRef}
             class="z-10 flex h-full flex-col justify-between bg-background pb-20"
           >
             <div class="mt-2 grid text-lg [&>*]:tracking-wide [&>button]:rounded-e-full">
               <button class={styles.button}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="lucide lucide-activity"
-                  data-darkreader-inline-stroke=""
-                  style="--darkreader-inline-stroke:currentColor;"
-                >
-                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                </svg>
+                <ActivityIcon />
                 <div class="settings">Activity</div>
               </button>
               <button class={styles.button}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="lucide lucide-settings"
-                  data-darkreader-inline-stroke=""
-                  style="--darkreader-inline-stroke:currentColor;"
-                >
-                  <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
+                <SettingsIcon />
                 <div class="settings">Settings</div>
               </button>
             </div>
@@ -306,9 +272,8 @@ const App: Component = () => {
 
         {/* PERF: Use margin inline start to position main content wrt aside, for smooth transitions */}
         <main
-          class={`${styles.main} ${
-            isAsideOpen() ? styles.open : ""
-          } border!  py-8! container mx-auto flex h-full max-w-lg flex-col justify-between space-y-0 px-8 @md:max-w-4xl [&>*]:bg-muted`}
+          class={`${styles.main} ${isAsideOpen() ? styles.open + " @md:max-w-4xl" : "@md:max-w-[62rem]"
+            } container flex h-full flex-col justify-between space-y-0 px-8 3xl:w-full bg-muted`}
         >
           <div class={styles.list_window}>
             <Show when={formStore}>
@@ -370,11 +335,13 @@ const App: Component = () => {
           */}
           </div>
 
-          <div class="top-full! px-12! sticky bottom-0 left-0 right-0 m-0 mx-0 w-full flex-shrink-0 place-self-end bg-background px-4 py-4 pb-8">
+          <div
+          // class="top-full! px-12! sticky bottom-0 left-0 right-0 m-0 mx-0 w-full flex-shrink-0 place-self-end bg-background px-4 py-4 pb-8"
+          >
             <Show
               when={isFormOpen()}
               fallback={
-                <div class="mx-auto flex h-fit w-full gap-4">
+                <div class="mx-auto flex h-fit w-full bg-muted  pt-4 gap-4">
                   <input
                     type="text"
                     onClick={(ev) => handleShowForm(ev)}
@@ -389,7 +356,7 @@ const App: Component = () => {
             >
               <form
                 onSubmit={(ev) => handleSubmitForm(ev)}
-                class="mx-auto flex h-fit w-full gap-4"
+                class="mx-auto bg-muted flex h-fit w-full gap-4"
               >
                 <div class="max-w-3xl! w-full gap-2 rounded-[50px] border bg-background px-4 py-2 [&>*>*]:border-transparent [&>*>*]:border-b-muted">
                   <div class={styles.formControl}>
@@ -452,7 +419,7 @@ const App: Component = () => {
                       onChange={updateFormField("is_cash")}
                       type="checkbox"
                       id="isCashCheckbox"
-                      // class="form-checkbox dark:invert dark:bg-background rounded"
+                    // class="form-checkbox dark:invert dark:bg-background rounded"
                     />
                   </div>
                 </div>

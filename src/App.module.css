@@ -5,27 +5,13 @@
 .app {
   display: flex;
   flex-direction: column;
-}
-
-.app.open {
-  display: grid;
-  grid-template-areas:
-    "header header"
-    "main main";
-  grid-template-columns: 1fr;
-  grid-template-rows: auto 1fr;
-}
-
-main.main.open {
-  margin-inline-start: 222px;
+  max-height: 100vh;
+  padding-block-end: 16px;
+  /* justify-content: space-between; */
 }
 
 header.header {
   grid-area: header;
-}
-
-main.main {
-  grid-area: main;
 }
 
 aside.aside {
@@ -40,6 +26,29 @@ aside.aside {
   @apply bottom-0 left-0 top-0 h-screen;
 }
 
+/* Use margin inline start to position main content wrt aside, for smooth transitions  */
+main.main {
+  grid-area: main;
+  margin-inline: 16px;
+  border-radius: 24px;
+  @apply container mx-auto border pb-4;
+}
+
+.app.open {
+  display: grid;
+  grid-template-areas:
+    "header header"
+    "main main";
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+}
+
+  /* NOTE: Animating with opacity, and transform is faster and smoother. */
+main.main.open {
+  /* transform: translateX(222px); */
+    margin-inline-start: 222px;
+}
+
 aside.aside.open {
   transform: translateX(0); /* Slide in when open */
 }
@@ -50,8 +59,47 @@ aside.aside.open {
     flex-direction: column;
   }
 
+  main.main {
+    /* border-radius: 0; */
+  }
+
   main.main.open {
     margin-inline-start: 0;
+    /* transform: translateX(0); */
+  }
+  /* TODO: With js/ts, toggle out open for mobile screen by default */
+}
+
+
+.list_window {
+  /* @apply rounded-t-[28px]; */
+  @apply  max-h-[75vh] h-full flex-shrink;
+  /* @apply absolute bottom-0 top-0 h-screen;  */
+  @apply overflow-y-auto;
+  /* @apply scroll-m-8 py-8; */
+
+  > section {
+    @apply bg-background;
+    @apply h-fit;
+    @apply mx-4 mb-4 p-6;
+    @apply rounded-3xl;
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    @apply rounded-full;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/10;
+    @apply rounded-full;
+    @apply my-4 py-4;
+  }
+
+  &::-webkit-scrollbar-track {
+    /* Same as background. Keeping it subtle */
+    @apply bg-transparent;
+    @apply rounded-sm;
   }
 }
 
@@ -122,38 +170,7 @@ form .formControl {
   }
 }
 
-.list_window {
-  /* @apply bg-background ; */
-  /* @apply bg-destructive; */
-  @apply rounded-t-[28px];
-  @apply scroll-m-8 py-8;
-  @apply h-full flex-shrink;
-  @apply overflow-y-auto;
 
-  &::-webkit-scrollbar {
-    width: 6px;
-    @apply rounded-full;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/10;
-    @apply rounded-full;
-    @apply my-4 py-4;
-  }
-
-  &::-webkit-scrollbar-track {
-    /* Same as background. Keeping it subtle */
-    @apply bg-transparent;
-    @apply rounded-sm;
-  }
-}
-
-.list_window section {
-  @apply bg-background;
-  @apply h-fit;
-  @apply mx-4 mb-4 p-6;
-  @apply rounded-3xl;
-}
 
 .workspace {
   overflow-y: auto;
