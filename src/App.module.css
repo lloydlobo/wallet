@@ -13,6 +13,7 @@
     "header header"
     "main main";
   grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
 }
 
 main.main.open{
@@ -53,7 +54,6 @@ aside.aside.open {
     margin-inline-start: 0;
   }
 }
-
 
 button.button,
 div.button {
@@ -115,7 +115,8 @@ form .formControl {
 }
 
 .list_window {
-  @apply bg-muted;
+  /* @apply bg-background ; */
+  /* @apply bg-destructive; */
   @apply rounded-t-[28px];
   @apply py-8 scroll-m-8;
   @apply flex-shrink h-full;

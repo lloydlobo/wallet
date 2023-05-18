@@ -1,5 +1,14 @@
+import styles from "@/App.module.css";
+import { HamburgerIcon, PlusIcon } from "@/components/icons";
+import { ListItem } from "@/components/ListItem";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { asHTMLInputDateValue } from "@/lib/date";
+import { getDB } from "@/lib/db/controllers";
+import { Ordering } from "@/lib/enums";
+import { useForm } from "@/lib/hooks/use-form";
+import { radixSort } from "@/lib/radix-sort";
+import { TDatabaseExpense } from "@/lib/types-supabase";
 import {
-  batch,
   Component,
   createEffect,
   createSignal,
@@ -9,19 +18,11 @@ import {
   Show
 } from "solid-js";
 import { JSX } from "solid-js/jsx-runtime";
-import styles from "@/App.module.css";
-import { PlusIcon } from "@/components/icons";
-import { ListItem } from "@/components/ListItem";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { asDateComponents, asHTMLInputDateValue } from "@/lib/date";
-import { getDB } from "@/lib/db/controllers";
-import { Ordering } from "@/lib/enums";
-import { useForm } from "@/lib/hooks/use-form";
-import { radixSort } from "@/lib/radix-sort";
-import { TDatabaseExpense } from "@/lib/types-supabase";
+import { Skeleton } from "./components/ui/skeleton";
+import { cn } from "./lib/cn";
 
+type TGroupedExpense = [string, TDatabaseExpense[]];
 
-type TodoItem = { title: string; done: boolean };
 async function fetchUser(id: unknown) {
   return (await fetch(`https://swapi.dev/api/people/${id}/`)).json();
 }// fetcher: ResourceFetcher<true, unknown, unknown>, options: InitializedResourceOptions<unknown, true>
@@ -68,7 +69,6 @@ function groupedItems(items: TDatabaseExpense[] | null) {
   }
 }
 
-type TGroupedExpense = [string, TDatabaseExpense[]];
 
 // Note: Effects are meant primarily for side effects that read but don't write to the reactive system:
 // it's best to avoid setting signals in effects, which without care can cause additional rendering
@@ -131,7 +131,6 @@ const App: Component = () => {
     })
   })
 
-
   const toggleSidebar = () => setIsAsideOpen(prev => !prev);
   const closeAsideOnOverlayInteraction = () => setIsAsideOpen(false);;
   const handleOpenAsideMenu = () => setIsAsideOpen(!isAsideOpen());
@@ -161,16 +160,13 @@ const App: Component = () => {
     (document.getElementById("formName") as HTMLElement).focus();
   }
 
-
   return (
     <div class={`@container h-screen ${styles.app} ${styles.open}`}>
       <header class={`${styles.header} border px-8 py-4 mb-1 z-10`}>
         <div class="flex items-center w-full justify-between">
-          <div class="flex gap-4 items-baseline place-content-center justify-center">
-            <button type="button" onClick={handleOpenAsideMenu} title="Main Menu" class="grid z-10 border border-transparent h-4 place-self-center">
-              <div class="w-5 h-[2px] bg-foreground"></div>
-              <div class="w-5 h-[2px] bg-foreground"></div>
-              <div class="w-5 h-[2px] bg-foreground"></div>
+          <div class="flex gap-4 items-center place-content-center justify-center">
+            <button type="button" onClick={handleOpenAsideMenu} title="Main Menu" class="grid z-10 border border-transparent place-self-center">
+              <HamburgerIcon />
             </button>
             <div class="flex gap-[6px] leading-none items-center relative">
               <div class="logo text-xl leading-none text-foreground/70 capitalize ">wallet</div>
@@ -222,19 +218,34 @@ const App: Component = () => {
 
 
         {/* PERF: Use margin inline start to position main content wrt aside, for smooth transitions */}
-        <main class={`${styles.main} ${isAsideOpen() ? styles.open : ""} container border! h-full flex flex-col justify-between max-w-lg @md:max-w-4xl px-8 space-y-0 mx-auto py-8!`}>
+        <main class={`${styles.main} ${isAsideOpen() ? styles.open : ""} [&>*]:bg-muted  container border! h-full flex flex-col justify-between max-w-lg @md:max-w-4xl px-8 space-y-0 mx-auto py-8!`}>
           <div class={styles.list_window}>
             <Show when={formStore}>
               <pre class="debug hidden">{JSON.stringify(formStore, null, 2)}</pre>
             </Show>
 
-            <Show when={groupedState()}>
+            <Show when={groupedState()}
+              fallback={
+                <For each={Array.from({ length: 4 })}>
+                  {(_) => (<section
+                    class="flex transition-all bg-card rounded-xl mx-auto justify-center! items-center space-x-4"
+                    style={{ "padding-block": "2rem" }}
+                  >
+                    <Skeleton class={"h-12 w-12 rounded-full"} />
+                    <div class="space-y-2">
+                      <Skeleton class={"h-4 w-[250px]"} />
+                      <Skeleton class={"h-4 w-[200px]"} />
+                    </div>
+                  </section>)}
+                </For>
+              }
+            >
               <For
                 each={groupedState() as unknown[] as [string, TDatabaseExpense[]]}
               >
                 {(items) => (
                   <section class="bg-card rounded-xl border! p-4! space-y-1">
-                    <h2 class="text-sm tracking-tighter text-muted-foreground">
+                    <h2 class="text-sm! tracking-tighter text-muted-foreground">
                       {items[0] as string}
                     </h2>
                     <div class="group_items">
@@ -256,7 +267,7 @@ const App: Component = () => {
           */}
           </div>
 
-          <div class="place-self-end flex-shrink-0 top-full! m-0 sticky bottom-0 bg-slate-100 dark:bg-slate-900 pb-8 py-4 mx-0 px-12! px-4 left-0 right-0 w-full">
+          <div class="place-self-end flex-shrink-0 top-full! m-0 sticky bottom-0 bg-background pb-8 py-4 mx-0 px-12! px-4 left-0 right-0 w-full">
             <Show
               when={isFormOpen()}
               fallback={

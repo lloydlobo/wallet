@@ -72,8 +72,8 @@ export function ListItem(props: ListItemProps): JSX.Element {
       <button onClick={handleOpenModal} class="grid hover:shadow hover:bg-muted transition-colors py-2 rounded-md px-4 grid-cols-4 justify-between w-full items-center">
         <div class="grid grid-cols-2 gap-1">
           <div class="flex gap-0.5">
-            <span class="text-xs">{dayName}</span>
-            <span class="text-xs">{dayDate}</span>
+            <span class="text-xs!">{dayName}</span>
+            <span class="text-xs!">{dayDate}</span>
           </div>
         </div>
         <div class="id">{itemsState().name}</div>
