@@ -7,6 +7,7 @@
   flex-direction: column;
   max-height: 100vh;
   padding-block-end: 16px;
+  @apply pb-6;
   /* justify-content: space-between; */
 }
 
@@ -31,7 +32,9 @@ main.main {
   grid-area: main;
   margin-inline: 16px;
   border-radius: 24px;
-  @apply container mx-auto border pb-4;
+  @apply container mx-auto border;
+  @apply  pb-6 ;
+  @apply  mb-6 ;
 }
 
 .app.open {
@@ -73,15 +76,16 @@ aside.aside.open {
 
 .list_window {
   /* @apply rounded-t-[28px]; */
-  @apply  max-h-[75vh] h-full flex-shrink;
+  @apply  max-h-[72vh] md:max-h-[68vh] h-full flex-shrink;
   /* @apply absolute bottom-0 top-0 h-screen;  */
   @apply overflow-y-auto;
-  /* @apply scroll-m-8 py-8; */
+  /* @apply mt-6; */
+  @apply scroll-m-6 py-6;
 
   > section {
     @apply bg-background;
     @apply h-fit;
-    @apply mx-4 mb-4 p-6;
+    @apply mx-1 mb-4 p-6;
     @apply rounded-3xl;
   }
 
