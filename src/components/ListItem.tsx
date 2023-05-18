@@ -1,5 +1,10 @@
 ////\@ts-nocheck
+import { CrossIcon } from "@/components/icons";
+import { Input } from "@/components/ui/input";
+import { stylesInput, Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/cn";
+import { asDateComponents, asDayOfWeek } from "@/lib/date";
+import { TDatabaseExpense } from "@/lib/types-supabase";
 import {
   createEffect,
   createSignal,
@@ -11,9 +16,6 @@ import {
   Show,
 } from "solid-js";
 import { JSX } from "solid-js/jsx-runtime";
-import { asDateComponents, asDayOfWeek } from "../lib/date";
-import { TDatabaseExpense } from "../lib/types-supabase";
-import { CrossIcon } from "./icons";
 
 type ListItemProps = {
   item: TDatabaseExpense;
@@ -21,6 +23,7 @@ type ListItemProps = {
 };
 
 export function ListItem(props: ListItemProps): JSX.Element {
+  const [isDialogOpen, setIsDialogOpen] = createSignal(false);
   const [showModal, setShowModal] = createSignal(false);
   const [itemsState, setItemState] = createSignal(props.item);
   const transaction_date =
@@ -46,19 +49,60 @@ export function ListItem(props: ListItemProps): JSX.Element {
 
   let modalRef: HTMLDivElement | ((el: HTMLDivElement) => void) | undefined;
   let formInputNameRef: HTMLInputElement | undefined;
+  let formTextareaRef: HTMLTextAreaElement | undefined;
+  let openItemDialogBtnRef;
+  let closeItemDialogBtnRef;
+  let itemDialogRef: HTMLDialogElement | undefined;
+  let itemDialogOutputRef: HTMLOutputElement | undefined;
+  let confirmItemDialogBtnRef: HTMLButtonElement | undefined;
 
   createEffect(() => {
-    if (showModal() && modalRef) {
-      document.addEventListener("keydown", handleEscapeKey);
+    itemDialogRef?.addEventListener("close", onCloseDialogEvent());
 
-      if (formInputNameRef) {
-        formInputNameRef.focus();
-      }
-    }
-    onCleanup(() => {
-      document.removeEventListener("keydown", handleEscapeKey);
+    formTextareaRef?.addEventListener("input", (ev) => {
+      console.log(ev);
     });
-  }); // PERF: Overall, using onMount() and onCleanup() is a recommended approach for adding and removing event listeners in SolidJS, as it promotes better performance and ensures proper cleanup.
+    formInputNameRef?.addEventListener("input", (ev) => {
+      console.log(ev);
+    });
+    // if (showModal() && modalRef) {
+    //   document.addEventListener("keydown", handleEscapeKey);
+    //   formInputNameRef?.focus();
+    // }
+
+    onCleanup(() => {
+      itemDialogRef?.removeEventListener("close", onCloseDialogEvent());
+
+      // document.removeEventListener("keydown", handleEscapeKey);
+    });
+  });
+
+  function onCloseDialogEvent(): (this: HTMLDialogElement, ev: Event) => any {
+    return (_ev: Event) => {
+      if (itemDialogOutputRef) {
+        itemDialogOutputRef.value =
+          itemDialogRef?.returnValue === "default"
+            ? "No return value"
+            : `ReturnValue:${itemDialogRef?.returnValue}.`;
+      }
+      props.setIsItemModalOpen(false);
+    };
+  }
+
+  // const closeDialog = ( ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }) => {
+  //   props.setIsItemModalOpen(false); return setIsDialogOpen(false);
+  // };
+
+  const openDialog = (
+    ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }
+  ) => {
+    ev.preventDefault();
+    // `show()` <- Displays the dialog element. vs `showModal()` Displays the dialog as modal -> itemDialogRef?.showModal();
+    itemDialogRef?.show();
+    // itemDialogRef?.showModal();
+    props.setIsItemModalOpen(true); // Tell parent that our dialog is open, used to signal that `Escape` key doesn't close <aside> when <dialog> is open.
+    return setIsDialogOpen(true);
+  };
 
   /**
    * Close the modal if the parent overlay is clicked outside of modal form.
@@ -80,22 +124,30 @@ export function ListItem(props: ListItemProps): JSX.Element {
     }
   }
 
-  function handleEscapeKey(this: Document, ev: KeyboardEvent) {
-    if (showModal() && ev.key === "Escape") {
-      props.setIsItemModalOpen(false);
-      setShowModal(false);
-    }
+  // function handleEscapeKey(this: Document, ev: KeyboardEvent) {
+  //   if (showModal() && ev.key === "Escape") {
+  //     props.setIsItemModalOpen(false);
+  //     setShowModal(false);
+  //   }
+  // }
+
+  function handleConfirmBtn(
+    ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }
+  ): void {
+    ev.preventDefault();
+    itemDialogRef?.close("TODO: add `selectEl.value`"); // Send the input value to dialog -> output.
+    props.setIsItemModalOpen(false);
   }
 
-  function handleOpenModal(): void {
-    props.setIsItemModalOpen(true);
-    setShowModal(!showModal());
-  }
+  // function handleOpenModal(): void { props.setIsItemModalOpen(true); // setShowModal(!showModal()); }
 
   return (
     <>
       <button
-        onClick={handleOpenModal}
+        // onClick={handleOpenModal}
+        onClick={(ev) => openDialog(ev)}
+        id="showDialog"
+        ref={openItemDialogBtnRef}
         class={cn(
           "grid w-full grid-cols-4 items-center justify-between rounded-md px-4 py-2 transition-colors hover:bg-muted hover:shadow"
         )}
@@ -116,7 +168,123 @@ export function ListItem(props: ListItemProps): JSX.Element {
         </div>
       </button>
 
-      <Show when={showModal()}>
+      <dialog
+        id="openItemDialog"
+        ref={itemDialogRef}
+        draggable={true}
+        // Opening dialogs via HTMLDialogElement.show() is preferred over the toggling of the boolean open attribute.
+        // open={isDialogOpen()} // Because this dialog was opened via the open attribute, it is non-modal.
+        // Note: Remove inset-0 to let dialog open under the selected item that toggles it.
+        class="inset-0 z-50 aspect-video w-full max-w-md overflow-x-clip rounded-2xl border border bg-card text-foreground"
+      >
+        <form method="dialog" action="" class="">
+          <div class="flex flex-col space-y-2">
+            <div class="flex w-full justify-between py-3">
+              <h2
+                data-title
+                class="font-semibold text-muted-foreground"
+                title={props.item.name}
+              >
+                Edit
+              </h2>
+              <button
+                ref={closeItemDialogBtnRef}
+                id="closeItemDialogBtn"
+                value="cancel"
+                formmethod="dialog"
+                class="place-self-end text-muted-foreground"
+              >
+                <div class="scale-[61%]">
+                  <CrossIcon />
+                </div>
+              </button>
+            </div>
+            <hr class="relative w-full scale-x-110" />
+
+            <div
+              data-body
+              class="relative grid gap-4 [&>input]:border-transparent [&>input]:border-b-muted"
+            >
+              <Input
+                ref={formInputNameRef}
+                type="text"
+                autofocus={true}
+                value={merged.item.name}
+              />
+              <Input
+                type="number"
+                value={props.item.amount}
+                className="font-mono"
+              />
+              <Textarea
+                value={props.item.description ?? ""}
+                ref={formTextareaRef}
+                // class="form-textarea  border-transparent border-b-muted"
+              />
+              <Input
+                type="date"
+                // style={{ background: "hsl(var(--muted))", "border-color": "transparent" }}
+                class={cn("form-input", stylesInput, "block")} // Hack: Bypass default flex with block to place datepicker at end.
+                value={initialDate}
+              />
+              <div class="form-input flex items-start justify-between gap-2 border-transparent bg-background">
+                <label for="isCash" class="grid gap-1">
+                  <span>Cash</span>
+                  <span class="relative text-xs text-muted-foreground/70">
+                    Transaction done with cash or credit.
+                  </span>
+                </label>
+                <Input
+                  id="isCash"
+                  type="checkbox"
+                  className="form-checkbox"
+                  checked={props.item.is_cash}
+                />
+              </div>
+              <div class="flex w-full justify-between px-2">
+                <div class="shell"></div>
+                <div class="flex gap-4">
+                  <button
+                    onClick={(ev) => setShowModal(false)}
+                    class="text-destructive"
+                    type="submit"
+                  >
+                    Delete
+                  </button>
+
+                  <button
+                    id="confirmBtn"
+                    onClick={(ev) => handleConfirmBtn(ev)}
+                    ref={confirmItemDialogBtnRef}
+                    value="default"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </dialog>
+      {/*
+      <Dialog itemDialogRef={itemDialogRef} closeItemDialogBtnRef={closeItemDialogBtnRef} props={props} handleConfirmBtn={handleConfirmBtn} confirmItemDialogBtnRef={confirmItemDialogBtnRef}
+      />
+      */}
+      <output data-debug class="sr-only" ref={itemDialogOutputRef}></output>
+
+      {/* Temporary overlay when dialogue is open */}
+      {/*
+      <Show when={isDialogOpen()}>
+        <div
+          class={`${cn(
+            "overlay absolute inset-0 z-10 h-screen w-screen border bg-background/50 bg-blend-overlay backdrop-blur-sm"
+          )}`}
+        />
+      </Show>
+      */}
+
+      {/* Disabled for refactoring form to use dialog instead of modal */}
+      <Show when={false && showModal()}>
         {/* TODO: rome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
         <div
           onClick={(ev) => handleToggleModal(ev)}
@@ -191,5 +359,54 @@ export function ListItem(props: ListItemProps): JSX.Element {
         </div>
       </Show>
     </>
+  );
+}
+
+type DialogProps = {
+  itemDialogRef: HTMLDialogElement | undefined;
+  closeItemDialogBtnRef: undefined;
+  props: ListItemProps;
+  handleConfirmBtn: (
+    ev: MouseEvent & {
+      currentTarget: HTMLButtonElement;
+      target: Element;
+    }
+  ) => void;
+  confirmItemDialogBtnRef: HTMLButtonElement | undefined;
+};
+
+export function Dialog(props: DialogProps) {
+  return (
+    <dialog
+      id="openItemDialog"
+      ref={props.itemDialogRef}
+      // Opening dialogs via HTMLDialogElement.show() is preferred over the toggling of the boolean open attribute.
+      // open={isDialogOpen()} // Because this dialog was opened via the open attribute, it is non-modal.
+      class="z-50 aspect-video w-full max-w-md rounded-2xl border bg-card text-foreground"
+    >
+      <form method="dialog" action="">
+        <div class="grid">
+          <button
+            ref={props.closeItemDialogBtnRef}
+            id="closeItemDialogBtn"
+            value="cancel"
+            formmethod="dialog"
+            class="place-self-end"
+          >
+            <CrossIcon />
+          </button>
+          <h2 class="text-xl ">Editing [{props.props.item.name}]</h2>
+          <p>Dialog content</p>
+          <button
+            id="confirmBtn"
+            onClick={(ev) => props.handleConfirmBtn(ev)}
+            ref={props.confirmItemDialogBtnRef}
+            value="default"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </dialog>
   );
 }
