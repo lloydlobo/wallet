@@ -1,102 +1,84 @@
-import { CrossIcon } from "@/components/icons";
-import { Input } from "@/components/ui/input";
-import { stylesInput, Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/cn";
-import { asDayOfWeek, asHTMLInputDateValue } from "@/lib/date";
-import { deleteRowsDB, insertRowsDB, updateRowsDB } from "@/lib/db/controllers";
-import { useForm } from "@/lib/hooks/use-form";
-import {
-  TDatabaseExpense,
-  TRowExpense,
-  TUpdateExpense,
-} from "@/lib/types-supabase";
-import { createEffect, createSignal, onCleanup, Setter } from "solid-js"; // mergeProps, // const merged = mergeProps({ ownerName: "John", month: 4 }, props);
-import { JSX } from "solid-js/jsx-runtime";
-import { z } from "zod";
+import { CrossIcon } from '@/components/icons'
+import { Input } from '@/components/ui/input'
+import { stylesInput, Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/cn'
+import { asDayOfWeek, asHTMLInputDateValue } from '@/lib/date'
+import { deleteRowsDB, insertRowsDB, updateRowsDB } from '@/lib/db/controllers'
+import { useForm } from '@/lib/hooks/use-form'
+import { TDatabaseExpense, TRowExpense, TUpdateExpense } from '@/lib/types-supabase'
+import { createEffect, createSignal, onCleanup, Setter } from 'solid-js' // mergeProps, // const merged = mergeProps({ ownerName: "John", month: 4 }, props);
+import { JSX } from 'solid-js/jsx-runtime'
+import { z } from 'zod'
 
 type ListItemProps = {
-  item: TRowExpense;
-  setIsItemModalOpen: Setter<boolean>;
-};
+  item: TRowExpense
+  setIsItemModalOpen: Setter<boolean>
+}
 
 // const closeDialog = ( ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }) => { props.setIsItemModalOpen(false); return setIsDialogOpen(false); };
 export function ListItem(props: ListItemProps): JSX.Element {
-  const {
-    formStore,
-    setFormStore,
-    updateFormField,
-    submit: handleSubmit,
-    clearField,
-  } = useForm();
+  const { formStore, setFormStore, updateFormField, submit: handleSubmit, clearField } = useForm()
 
-  const [isDialogOpen, setIsDialogOpen] = createSignal(false);
-  const [showModal, setShowModal] = createSignal(false);
+  const [isDialogOpen, setIsDialogOpen] = createSignal(false)
+  const [showModal, setShowModal] = createSignal(false)
 
-  const dateTransaction = new Date(getAnyDate());
+  const dateTransaction = new Date(getAnyDate())
 
-  let formInputNameRef: HTMLInputElement | undefined;
-  let formTextareaRef: HTMLTextAreaElement | undefined;
-  let itemDialogRef: HTMLDialogElement | undefined;
-  let itemDialogOutputRef: HTMLOutputElement | undefined;
-  let confirmItemDialogBtnRef: HTMLButtonElement | undefined;
-  let openItemDialogBtnRef;
-  let closeItemDialogBtnRef;
+  let formInputNameRef: HTMLInputElement | undefined
+  let formTextareaRef: HTMLTextAreaElement | undefined
+  let itemDialogRef: HTMLDialogElement | undefined
+  let itemDialogOutputRef: HTMLOutputElement | undefined
+  let confirmItemDialogBtnRef: HTMLButtonElement | undefined
+  let openItemDialogBtnRef
+  let closeItemDialogBtnRef
 
   createEffect(() => {
-    itemDialogRef?.addEventListener("close", onCloseDialogEvent);
+    itemDialogRef?.addEventListener('close', onCloseDialogEvent)
     onCleanup(() => {
-      itemDialogRef?.removeEventListener("close", onCloseDialogEvent);
-    });
-  });
+      itemDialogRef?.removeEventListener('close', onCloseDialogEvent)
+    })
+  })
 
   function getAnyDate(): string {
-    return (
-      props.item.transaction_date ??
-      props.item.created_at ??
-      props.item.updated_at
-    );
+    return props.item.transaction_date ?? props.item.created_at ?? props.item.updated_at
   }
 
-  function onDelete(
-    ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }
-  ) {
-    ev.preventDefault();
-    deleteRowsDB({ id: z.coerce.string().parse(props.item.id) });
-    setIsDialogOpen(false);
-    return setShowModal(false);
+  function onDelete(ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }) {
+    ev.preventDefault()
+    deleteRowsDB({ id: z.coerce.string().parse(props.item.id) })
+    setIsDialogOpen(false)
+    return setShowModal(false)
   }
 
   function onCloseDialogEvent(this: HTMLDialogElement, _ev: Event) {
-    if (!itemDialogOutputRef) return;
+    if (!itemDialogOutputRef) return
     itemDialogOutputRef.value =
-      itemDialogRef?.returnValue === "default"
-        ? "No return value"
-        : `ReturnValue:${itemDialogRef?.returnValue}.`;
-    props.setIsItemModalOpen(false);
+      itemDialogRef?.returnValue === 'default'
+        ? 'No return value'
+        : `ReturnValue:${itemDialogRef?.returnValue}.`
+    props.setIsItemModalOpen(false)
   }
 
   // `show()` <- Displays the dialog element. vs `showModal()` Displays the dialog as modal
   // -> itemDialogRef?.showModal();
-  const openDialog = (
-    _ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }
-  ) => {
-    itemDialogRef?.showModal();
+  const openDialog = (_ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }) => {
+    itemDialogRef?.showModal()
     // itemDialogRef?.show();
-    props.setIsItemModalOpen(true); // Tell parent that our dialog is open, used to signal that `Escape` key doesn't close <aside> when <dialog> is open.
-    setFormStore(props.item);
+    props.setIsItemModalOpen(true) // Tell parent that our dialog is open, used to signal that `Escape` key doesn't close <aside> when <dialog> is open.
+    setFormStore(props.item)
     // Link formStore content to the one we selected.
-    return setIsDialogOpen(true); // TODO: can we user this setters state totell parent if modal is closed?
-  };
+    return setIsDialogOpen(true) // TODO: can we user this setters state totell parent if modal is closed?
+  }
 
   const onSubmitUpdateCallback = async (data: TUpdateExpense) => {
     // TODO: refactor code to use formStore and pick each value.. by using value,onInput to each HTML Field
     // HACK: Simple work 10minutes.
-    const toUpdate = data;
-    toUpdate.id = props.item.id;
+    const toUpdate = data
+    toUpdate.id = props.item.id
 
-    console.log({ toUpdate });
-    await updateRowsDB({ from: props.item, to: data });
-  };
+    // console.log({ toUpdate })
+    await updateRowsDB({ from: props.item, to: data })
+  }
 
   async function onConfirm(
     _ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }
@@ -104,20 +86,20 @@ export function ListItem(props: ListItemProps): JSX.Element {
     const data = await updateRowsDB({
       from: { id: props.item.id },
       to: props.item,
-    });
-    await handleSubmit(onSubmitUpdateCallback); // NOTE: Logic to handle submiting to server.
-    console.log(data); // Mutate global store with update row.
-    itemDialogRef?.close("TODO: add `selectEl.value`"); // Send the input value to dialog -> output.
-    props.setIsItemModalOpen(false);
+    })
+    await handleSubmit(onSubmitUpdateCallback) // NOTE: Logic to handle submiting to server.
+    // console.log(data) // Mutate global store with update row.
+    itemDialogRef?.close('TODO: add `selectEl.value`') // Send the input value to dialog -> output.
+    props.setIsItemModalOpen(false)
   }
 
   async function handleSubmitForm(
     ev: Event & { submitter: HTMLElement } & {
-      currentTarget: HTMLFormElement;
-      target: Element;
+      currentTarget: HTMLFormElement
+      target: Element
     }
   ) {
-    ev.preventDefault();
+    ev.preventDefault()
     // setIsFormOpen(false);
   }
 
@@ -129,26 +111,20 @@ export function ListItem(props: ListItemProps): JSX.Element {
         onClick={(ev) => openDialog(ev)}
         ref={openItemDialogBtnRef}
         class={cn(
-          "grid w-full grid-cols-4 items-center justify-between rounded-md px-4 py-2 transition-colors hover:bg-muted hover:shadow"
+          'grid w-full grid-cols-4 items-center justify-between rounded-md px-4 py-2 transition-colors hover:bg-muted hover:shadow'
         )}
       >
         <div class="grid grid-cols-2 gap-1">
           <div class="flex gap-0.5">
-            <span class="">
-              {asDayOfWeek(dateTransaction).weekDay.slice(0, 3)}
-            </span>
-            <span class="">
-              {dateTransaction.getDate().toString().padStart(2, "0")}
-            </span>
+            <span class="">{asDayOfWeek(dateTransaction).weekDay.slice(0, 3)}</span>
+            <span class="">{dateTransaction.getDate().toString().padStart(2, '0')}</span>
           </div>
         </div>
         <div class="text-start">{props.item.name}</div>
-        <div class="text-start text-muted-foreground">
-          {props.item.description ?? ""}
-        </div>
+        <div class="text-start text-muted-foreground">{props.item.description ?? ''}</div>
         <div class="grid grid-cols-2">
           <div class="text-end">{props.item.amount}</div>
-          <div class="id">{props.item.is_cash ? "Cash" : "Other"}</div>
+          <div class="id">{props.item.is_cash ? 'Cash' : 'Other'}</div>
         </div>
       </button>
 
@@ -161,13 +137,9 @@ export function ListItem(props: ListItemProps): JSX.Element {
         <form method="dialog" action="" class="">
           <div class="flex flex-col space-y-2">
             <div class="flex w-full justify-between py-3">
-              <h2
-                data-title
-                class="font-semibold text-muted-foreground"
-                title={props.item.name}
-              >
-                {" "}
-                Edit{" "}
+              <h2 data-title class="font-semibold text-muted-foreground" title={props.item.name}>
+                {' '}
+                Edit{' '}
               </h2>
               <button
                 type="button"
@@ -178,12 +150,12 @@ export function ListItem(props: ListItemProps): JSX.Element {
                 formmethod="dialog"
                 class="place-self-end text-muted-foreground"
                 onClick={(ev) => {
-                  ev.preventDefault();
-                  itemDialogRef?.close();
-                  setIsDialogOpen(false);
-                  setShowModal(false);
+                  ev.preventDefault()
+                  itemDialogRef?.close()
+                  setIsDialogOpen(false)
+                  setShowModal(false)
                   for (const key of Object.keys(formStore)) {
-                    clearField(key);
+                    clearField(key)
                   }
                 }}
               >
@@ -203,10 +175,10 @@ export function ListItem(props: ListItemProps): JSX.Element {
                 required
                 id="formName"
                 value={formStore.name} // value={formStore.name}
-                onChange={updateFormField("name")} // use onChange for less control on reactivity or more performance.
+                onChange={updateFormField('name')} // use onChange for less control on reactivity or more performance.
               />
               <Input
-                onChange={updateFormField("amount")}
+                onChange={updateFormField('amount')}
                 id="formAmount"
                 type="number"
                 placeholder="Amount"
@@ -216,18 +188,18 @@ export function ListItem(props: ListItemProps): JSX.Element {
                 className="font-mono"
               />
               <Textarea
-                onChange={updateFormField("description")}
+                onChange={updateFormField('description')}
                 placeholder="Description"
-                value={formStore.description ?? ""}
+                value={formStore.description ?? ''}
                 ref={formTextareaRef}
               />
               <Input
-                onChange={updateFormField("transaction_date")}
+                onChange={updateFormField('transaction_date')}
                 type="date"
                 placeholder="Amount"
                 id="formDate"
                 // TODO: Manually convert date from formStore.transaction_date with asHTMLInputDateValue
-                class={cn("form-input", stylesInput, "block")}
+                class={cn('form-input', stylesInput, 'block')}
                 value={asHTMLInputDateValue(
                   new Date(
                     formStore.transaction_date ??
@@ -236,7 +208,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
                       props.item.updated_at
                   )
                 )}
-              />{" "}
+              />{' '}
               {/* Hack: Bypass default flex with block to place datepicker at end. */}
               <div class="form-input flex items-start justify-between gap-2 border-transparent bg-background">
                 <div class="flex flex-col space-y-1">
@@ -248,7 +220,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
                 <Input
                   type="checkbox"
                   className="form-checkbox"
-                  onChange={updateFormField("is_cash")}
+                  onChange={updateFormField('is_cash')}
                   id="isCashCheckbox"
                   checked={formStore.is_cash}
                 />
@@ -256,20 +228,20 @@ export function ListItem(props: ListItemProps): JSX.Element {
             </div>
             <div
               data-actions
-              class="flex w-full flex-col justify-end gap-4 px-2 @sm:flex-row @md:[&_button]:min-w-[4rem]"
+              class="@md:[&_button]:min-w-[4rem]! flex w-full flex-col place-content-end justify-end gap-4 px-2 @sm:flex-row"
             >
               <button
                 onClick={(ev) => {
-                  ev.preventDefault();
-                  onDelete(ev);
-                  itemDialogRef?.close();
-                  setIsDialogOpen(false);
-                  setShowModal(false);
+                  ev.preventDefault()
+                  onDelete(ev)
+                  itemDialogRef?.close()
+                  setIsDialogOpen(false)
+                  setShowModal(false)
                   for (const key of Object.keys(formStore)) {
-                    clearField(key);
+                    clearField(key)
                   }
                 }}
-                class="text-destructive"
+                class="basis-1/6 text-destructive"
                 type="button"
               >
                 Delete
@@ -280,6 +252,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
                 onClick={onConfirm}
                 ref={confirmItemDialogBtnRef}
                 value="default"
+                class="basis-1/6"
               >
                 Save
               </button>
@@ -289,21 +262,21 @@ export function ListItem(props: ListItemProps): JSX.Element {
       </dialog>
       <output data-debug class="sr-only!" ref={itemDialogOutputRef} />
     </>
-  );
+  )
 }
 
 type DialogProps = {
-  itemDialogRef: HTMLDialogElement | undefined;
-  closeItemDialogBtnRef: undefined;
-  props: ListItemProps;
+  itemDialogRef: HTMLDialogElement | undefined
+  closeItemDialogBtnRef: undefined
+  props: ListItemProps
   handleConfirmBtn: (
     ev: MouseEvent & {
-      currentTarget: HTMLButtonElement;
-      target: Element;
+      currentTarget: HTMLButtonElement
+      target: Element
     }
-  ) => void;
-  confirmItemDialogBtnRef: HTMLButtonElement | undefined;
-};
+  ) => void
+  confirmItemDialogBtnRef: HTMLButtonElement | undefined
+}
 
 // Note: Opening dialogs via HTMLDialogElement.show() is preferred over the toggling of
 // the boolean open attribute. open={isDialogOpen()} // Because this dialog was opened via
@@ -343,7 +316,7 @@ export function Dialog(props: DialogProps) {
         </div>
       </form>
     </dialog>
-  );
+  )
 }
 
 // {/* Temporary overlay when dialogue is open */}

@@ -43,8 +43,8 @@ aside.aside {
 .app.open {
   display: grid;
   grid-template-areas:
-    "header header"
-    "main main";
+    'header header'
+    'main main';
   grid-template-columns: 1fr;
   grid-template-rows: auto 1fr;
 }
@@ -105,10 +105,10 @@ form .formControl {
     text-align: left;
     @apply text-sm tracking-wide text-muted-foreground;
   }
-  > input[type="checkbox"] {
+  > input[type='checkbox'] {
     margin-inline-start: 1ch;
   }
-  > input[type="number"] {
+  > input[type='number'] {
     @apply font-mono;
     &::placeholder {
       font-family: sans-serif;

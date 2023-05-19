@@ -1,41 +1,41 @@
 // @aource https://codesandbox.io/s/solidjs-submit-form-with-store-6kh4c?from-embed=&file=%2Fsrc%2FuseForm.ts
 
-import { createStore } from "solid-js/store";
-import { insertRowsDB } from "../db/controllers";
-import { TDatabaseExpense, TUpdateExpense } from "../types-supabase";
+import { createStore } from 'solid-js/store'
+import { insertRowsDB } from '../db/controllers'
+import { TDatabaseExpense, TUpdateExpense } from '../types-supabase'
 
 export function useForm() {
-  const now = new Date().toISOString();
+  const now = new Date().toISOString()
   const [formStore, setFormStore] = createStore<TUpdateExpense>({
     amount: 0,
     created_at: now,
     description: null, // id: (expenses()?.length ?? -1) + 1,
     is_cash: false,
-    name: "", // owner: "",
+    name: '', // owner: "",
     transaction_date: null,
     updated_at: now,
-  });
+  })
 
   // Reusable function to update the store based on the name of the property field.
   const updateFormField = (fieldName: string) => (ev: Event) => {
-    const inputElement = ev?.currentTarget as HTMLInputElement;
-    if (inputElement.type === "checkbox") {
+    const inputElement = ev?.currentTarget as HTMLInputElement
+    if (inputElement.type === 'checkbox') {
       setFormStore({
         [fieldName]: !!inputElement.checked,
-      });
+      })
     } else {
       setFormStore({
         [fieldName]: inputElement.value,
-      });
+      })
     }
-  };
+  }
 
   const clearField = (fieldName: string) => {
     // FIXME: Would it automatically parse non-string values, like boolean of is_cash?
     setFormStore({
-      [fieldName]: "",
-    });
-  };
+      [fieldName]: '',
+    })
+  }
 
   // TODO: Comparedto react-hook-forms, just use this to return formStore value.
   // PERF: We can move submit in useForm's scope, to access formStore value?
@@ -49,13 +49,13 @@ export function useForm() {
       name: formStore.name,
       transaction_date: formStore.transaction_date,
       updated_at: formStore.updated_at,
-    }; // owner: "", id: (expenses()?.length ?? -1) + 1,
-    console.log(`submitting ${JSON.stringify(dataToSubmit)}`);
+    } // owner: "", id: (expenses()?.length ?? -1) + 1,
+    // console.log(`submitting ${JSON.stringify(dataToSubmit)}`)
 
     // NOTE: Submit to back-end server or database.
-    const VITE_SUPABASE_OWNER = import.meta.env.VITE_SUPABASE_OWNER;
+    const VITE_SUPABASE_OWNER = import.meta.env.VITE_SUPABASE_OWNER
 
-    const now = new Date();
+    const now = new Date()
     const dataWithOwnerToSubmit: TUpdateExpense = {
       name: formStore.name,
       description: formStore.description,
@@ -65,11 +65,11 @@ export function useForm() {
       created_at: now.toISOString(),
       updated_at: now.toISOString(),
       transaction_date: formStore.transaction_date ?? now.toISOString(),
-    };
+    }
 
     // await insertRowsDB([dataWithOwnerToSubmit]);
-    await onSubmit(dataWithOwnerToSubmit);
-  };
+    await onSubmit(dataWithOwnerToSubmit)
+  }
 
-  return { formStore, setFormStore, submit, updateFormField, clearField };
+  return { formStore, setFormStore, submit, updateFormField, clearField }
 }
