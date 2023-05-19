@@ -4,7 +4,7 @@ import {
   CrossIcon,
   HamburgerIcon,
   PlusIcon,
-  SettingsIcon
+  SettingsIcon,
 } from "@/components/icons";
 import { ListItem } from "@/components/ListItem";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -23,7 +23,7 @@ import {
   onCleanup,
   onMount,
   Setter,
-  Show
+  Show,
 } from "solid-js";
 import { JSX } from "solid-js/jsx-runtime";
 import { z } from "zod";
@@ -38,14 +38,14 @@ async function fetchUser(id: unknown) {
 
 const ErrorMessage = (props: {
   error:
-  | number
-  | boolean
-  | Node
-  | JSX.ArrayElement
-  | JSX.FunctionElement
-  | (string & {})
-  | null
-  | undefined;
+    | number
+    | boolean
+    | Node
+    | JSX.ArrayElement
+    | JSX.FunctionElement
+    | (string & {})
+    | null
+    | undefined;
 }) => <span class="error-message">{props.error}</span>;
 
 /**
@@ -76,7 +76,7 @@ function groupedItems(items: TDatabaseExpense[] | null) {
 
 const SkeletonSection = () => (
   <section
-    class="justify-center! p-6 mx-auto flex items-center space-x-4 rounded-xl bg-card transition-all"
+    class="justify-center! mx-auto flex items-center space-x-4 rounded-xl bg-card p-6 transition-all"
     style={{ "padding-block": "2rem" }}
   >
     <Skeleton class={"h-12 w-12 rounded-full"} />
@@ -93,7 +93,6 @@ const breakpointSM: TBreakpoint = 640; // tailwind sm:640px.
 const validBreakpointSM = breakpointSchema.parse(breakpointSM);
 
 const App: Component = () => {
-
   const { formStore, updateFormField, submit, clearField } = useForm();
 
   const [expenses, setExpenses] = createSignal<TDatabaseExpense[] | null>(null);
@@ -143,22 +142,21 @@ const App: Component = () => {
     onCleanup(() => {
       setExpenses(null);
       setGroupedState(null);
-    })
+    });
   });
 
   const isSmScreen = (): boolean => !(window.innerWidth >= validBreakpointSM);
   const toggleSidebar = () => setIsAsideOpen((prev) => !prev);
   const onKeydownShortcuts = (ev: KeyboardEvent) => {
-    console.log(ev)
+    console.log(ev);
     if (ev.key === "Escape") {
       setIsAsideOpen(false);
     } else if (ev.ctrlKey && ev.shiftKey && ev.key === "E") {
-      toggleSidebar()
+      toggleSidebar();
       // setIsAsideOpen(true);
     } else if (ev.ctrlKey && ev.key === "k") {
       ev.preventDefault(); // Avoid browser focus on address bar.
-      alert("Command") //  TODO: Use cmdk like command-pallete.
-
+      alert("Command"); //  TODO: Use cmdk like command-pallete.
     }
   };
   function handleResize(this: Window, _ev: UIEvent) {
@@ -169,7 +167,10 @@ const App: Component = () => {
     }
   }
   async function handleSubmitForm(
-    ev: Event & { submitter: HTMLElement } & { currentTarget: HTMLFormElement; target: Element; }
+    ev: Event & { submitter: HTMLElement } & {
+      currentTarget: HTMLFormElement;
+      target: Element;
+    }
   ) {
     ev.preventDefault();
     await submit(formStore);
@@ -187,16 +188,14 @@ const App: Component = () => {
     <div class="flex h-screen max-h-screen flex-col overflow-y-clip ">
       <Header toggleSidebar={toggleSidebar} />
       <div class="relative">
-        <Aside
-          isAsideOpen={isAsideOpen()}
-          ref={asideOverlayRef}
-        />
+        <Aside isAsideOpen={isAsideOpen()} ref={asideOverlayRef} />
       </div>
 
       {/* TODO: Style scroll bar from App.module.css */}
       <main
-        class={`${styles.workWindow} ${isAsideOpen() ? "md:ms-[233px]" : ""
-          } md:mt-8! flex-1 flex-grow overflow-y-auto bg-muted px-6 pt-6 md:mx-16 md:rounded-t-3xl`}
+        class={`${styles.workWindow} ${
+          isAsideOpen() ? "md:ms-[233px]" : ""
+        } md:mt-8! flex-1 flex-grow overflow-y-auto bg-muted px-6 pt-6 md:mx-16 md:rounded-t-3xl`}
       >
         <Workspace
           groupedState={groupedState()}
@@ -205,8 +204,9 @@ const App: Component = () => {
       </main>
 
       <footer
-        class={`${isAsideOpen() ? "md:ms-[233px]" : ""
-          } bg-muted px-8 pb-2 md:mx-16 md:mb-6 md:rounded-b-3xl`}
+        class={`${
+          isAsideOpen() ? "md:ms-[233px]" : ""
+        } bg-muted px-8 pb-2 md:mx-16 md:mb-6 md:rounded-b-3xl`}
       >
         {/* TODO: Call the setter state function before passing them as props. */}
         <CreateNewExpense
@@ -404,24 +404,24 @@ type AsideProps = {
 function Aside(props: AsideProps): JSX.Element {
   return (
     <aside
-      class={`${styles.aside} transition-transform ${props.isAsideOpen ? styles.open + "" : ""
-        }`}
+      class={`${styles.aside} transition-transform ${
+        props.isAsideOpen ? styles.open + "" : ""
+      }`}
     >
       {/* Sidebar Overlay */}
       <div
         ref={props.ref}
         aria-label="aside-backdrop"
-        class={`${props.isAsideOpen
-          ? styles.open +
-          "opacity-70 blur-none transition-all duration-150 delay-0  ease-linear"
-          : "-translate-x-full opacity-0 blur-2xl transition-all duration-100 delay-0  "
-          } ease absolute inset-0 -z-10 h-screen w-screen bg-muted/70 bg-blend-overlay md:hidden`}
+        class={`${
+          props.isAsideOpen
+            ? styles.open +
+              "opacity-70 blur-none transition-all duration-150 delay-0  ease-linear"
+            : "-translate-x-full opacity-0 blur-2xl transition-all duration-100 delay-0  "
+        } ease absolute inset-0 -z-10 h-screen w-screen bg-muted/70 bg-blend-overlay md:hidden`}
       />
 
       {/* Sidebar Content */}
-      <div
-        class="z-10 flex h-full flex-col justify-between bg-background pb-20"
-      >
+      <div class="z-10 flex h-full flex-col justify-between bg-background pb-20">
         <div class="mt-2 grid text-lg [&>*]:tracking-wide [&>button]:rounded-e-full">
           <button class={cn(styles.button)}>
             <ActivityIcon class="hover:animate-icon-spinslide" />
@@ -445,7 +445,7 @@ function Aside(props: AsideProps): JSX.Element {
   );
 }
 
-type HeaderProps = { toggleSidebar: () => boolean; };
+type HeaderProps = { toggleSidebar: () => boolean };
 function Header(props: HeaderProps): JSX.Element {
   return (
     <header

@@ -60,8 +60,12 @@ export function ListItem(props: ListItemProps): JSX.Element {
   createEffect(() => {
     itemDialogRef?.addEventListener("close", onCloseDialogEvent());
 
-    formTextareaRef?.addEventListener("input", (ev) => { console.log(ev); });
-    formInputNameRef?.addEventListener("input", (ev) => { console.log(ev); });
+    formTextareaRef?.addEventListener("input", (ev) => {
+      console.log(ev);
+    });
+    formInputNameRef?.addEventListener("input", (ev) => {
+      console.log(ev);
+    });
     // if (showModal() && modalRef) {
     //   document.addEventListener("keydown", handleEscapeKey);
     //   formInputNameRef?.focus();
@@ -204,7 +208,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
               <Textarea
                 value={props.item.description ?? ""}
                 ref={formTextareaRef}
-              // class="form-textarea  border-transparent border-b-muted"
+                // class="form-textarea  border-transparent border-b-muted"
               />
               <Input
                 type="date"
@@ -261,7 +265,6 @@ export function ListItem(props: ListItemProps): JSX.Element {
       />
       */}
       <output data-debug class="sr-only" ref={itemDialogOutputRef}></output>
-
     </>
   );
 }
@@ -317,36 +320,35 @@ export function Dialog(props: DialogProps) {
   );
 }
 
-
-      // {/* Temporary overlay when dialogue is open */}
-      //
-      // {/* Disabled for refactoring form to use dialog instead of modal */}
-      // <Show when={false && showModal()}>
-      //   {/* TODO: rome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
-      //   <div onClick={(ev) => handleToggleModal(ev)} class="absolute inset-0 z-50 grid place-content-center bg-background/50 bg-blend-overlay backdrop-blur-sm @container" >
-      //     <div id="modalRef" ref={modalRef} class="w-full max-w-md place-self-center rounded-2xl border bg-card p-8 shadow" >
-      //       <form action="">
-      //         <div class="relative grid gap-4 p-2 [&>input]:border-transparent [&>input]:border-b-muted">
-      //           <button onClick={(ev) => setShowModal(false)} class="absolute -right-5 -top-5 text-muted-foreground" type="submit" >
-      //             <div class="scale-75"> <CrossIcon /> </div>
-      //           </button>
-      //           <input ref={formInputNameRef} type="text" class="form-input" value={merged.item.name} />
-      //           <textarea class="form-textarea border-transparent border-b-muted" value={props.item.description ?? ""} />
-      //           <input type="date" class="form-input" value={initialDate} />
-      //           <input type="number" class="form-input" value={props.item.amount} />
-      //           <div class="form-input flex items-center gap-2 border-transparent bg-background">
-      //             <label for="isCash" class="text-sm text-muted-foreground"> Cash:{" "} </label>
-      //             <input id="isCash" type="checkbox" class="form-checkbox" checked={props.item.is_cash} />
-      //           </div>
-      //           <div class="flex w-full justify-between px-2">
-      //             <div class="shell"></div>
-      //             <div class="flex gap-4">
-      //               <button onClick={(ev) => setShowModal(false)} class="text-destructive" type="submit" > Delete </button>
-      //               <button class="" type="button"> Save </button>
-      //             </div>
-      //           </div>
-      //         </div>
-      //       </form>
-      //     </div>
-      //   </div>
-      // </Show>
+// {/* Temporary overlay when dialogue is open */}
+//
+// {/* Disabled for refactoring form to use dialog instead of modal */}
+// <Show when={false && showModal()}>
+//   {/* TODO: rome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
+//   <div onClick={(ev) => handleToggleModal(ev)} class="absolute inset-0 z-50 grid place-content-center bg-background/50 bg-blend-overlay backdrop-blur-sm @container" >
+//     <div id="modalRef" ref={modalRef} class="w-full max-w-md place-self-center rounded-2xl border bg-card p-8 shadow" >
+//       <form action="">
+//         <div class="relative grid gap-4 p-2 [&>input]:border-transparent [&>input]:border-b-muted">
+//           <button onClick={(ev) => setShowModal(false)} class="absolute -right-5 -top-5 text-muted-foreground" type="submit" >
+//             <div class="scale-75"> <CrossIcon /> </div>
+//           </button>
+//           <input ref={formInputNameRef} type="text" class="form-input" value={merged.item.name} />
+//           <textarea class="form-textarea border-transparent border-b-muted" value={props.item.description ?? ""} />
+//           <input type="date" class="form-input" value={initialDate} />
+//           <input type="number" class="form-input" value={props.item.amount} />
+//           <div class="form-input flex items-center gap-2 border-transparent bg-background">
+//             <label for="isCash" class="text-sm text-muted-foreground"> Cash:{" "} </label>
+//             <input id="isCash" type="checkbox" class="form-checkbox" checked={props.item.is_cash} />
+//           </div>
+//           <div class="flex w-full justify-between px-2">
+//             <div class="shell"></div>
+//             <div class="flex gap-4">
+//               <button onClick={(ev) => setShowModal(false)} class="text-destructive" type="submit" > Delete </button>
+//               <button class="" type="button"> Save </button>
+//             </div>
+//           </div>
+//         </div>
+//       </form>
+//     </div>
+//   </div>
+// </Show>
