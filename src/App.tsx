@@ -26,6 +26,7 @@ import {
   Show
 } from "solid-js";
 import { JSX } from "solid-js/jsx-runtime";
+import { z } from "zod";
 import { Skeleton } from "./components/ui/skeleton";
 import { cn } from "./lib/cn";
 
@@ -75,7 +76,7 @@ function groupedItems(items: TDatabaseExpense[] | null) {
 
 const SkeletonSection = () => (
   <section
-    class="justify-center! mx-auto flex items-center space-x-4 rounded-xl bg-card transition-all"
+    class="justify-center! p-6 mx-auto flex items-center space-x-4 rounded-xl bg-card transition-all"
     style={{ "padding-block": "2rem" }}
   >
     <Skeleton class={"h-12 w-12 rounded-full"} />
@@ -86,9 +87,12 @@ const SkeletonSection = () => (
   </section>
 );
 
+const breakpointSchema = z.number().min(640).max(1040).positive();
+type TBreakpoint = z.infer<typeof breakpointSchema>;
+const breakpointSM: TBreakpoint = 640; // tailwind sm:640px.
+const validBreakpointSM = breakpointSchema.parse(breakpointSM);
+
 const App: Component = () => {
-  // z.min(640).max(1040)
-  const breakpointSM: number = 640; // tailwind sm:640px.
 
   const { formStore, updateFormField, submit, clearField } = useForm();
 
@@ -142,13 +146,19 @@ const App: Component = () => {
     })
   });
 
-  const isSmScreen = (): boolean => !(window.innerWidth >= breakpointSM);
+  const isSmScreen = (): boolean => !(window.innerWidth >= validBreakpointSM);
   const toggleSidebar = () => setIsAsideOpen((prev) => !prev);
   const onKeydownShortcuts = (ev: KeyboardEvent) => {
+    console.log(ev)
     if (ev.key === "Escape") {
       setIsAsideOpen(false);
-    } else if (ev.key === "Meta") {
-      setIsAsideOpen(true);
+    } else if (ev.ctrlKey && ev.shiftKey && ev.key === "E") {
+      toggleSidebar()
+      // setIsAsideOpen(true);
+    } else if (ev.ctrlKey && ev.key === "k") {
+      ev.preventDefault(); // Avoid browser focus on address bar.
+      alert("Command") //  TODO: Use cmdk like command-pallete.
+
     }
   };
   function handleResize(this: Window, _ev: UIEvent) {
@@ -248,7 +258,7 @@ function Workspace(props: WorkspaceProps) {
         each={props.groupedState as unknown[] as [string, TDatabaseExpense[]]}
       >
         {(items) => (
-          <section class="border! p-4! mx-1 mb-4 h-fit space-y-1 rounded-3xl bg-card p-6">
+          <section class="mx-1 mb-4 h-fit space-y-1 rounded-3xl bg-card p-6">
             <h2 class="tracking-tighter text-muted-foreground">
               {items[0].toString()}
             </h2>
@@ -446,7 +456,7 @@ function Header(props: HeaderProps): JSX.Element {
           <button
             type="button"
             onClick={props.toggleSidebar}
-            title="Main Menu"
+            title="Main Menu\nCtrl-Shift-E"
             class="z-10 grid place-self-center border border-transparent"
           >
             <HamburgerIcon />
@@ -487,73 +497,3 @@ function Header(props: HeaderProps): JSX.Element {
     </header>
   );
 }
-// function Card(): JSX.Element {
-//   return (
-//     <div class="w-full min-h-[40%] items-center gap-2 m-6 bg-slate-100 rounded-xl p-6 @xl:flex">
-//       <div class="bg-slate-300 @xl:w-1/4 @xl:h-full aspect-video mb-4 w-full object-cover" />
-//       {/*<img src={logo} alt="solid" class="@xl:w-1/4" />*/}
-//       <div>
-//         <h2 class="text-xl font-bold">Lorem</h2>
-//         <p>
-//           Lorem ipsum dolor sit amet, qui minim labore adipisicing minim sint
-//           cillum sint consectetur cupidatat.
-//         </p>
-//         <button type="button">Read more</button>
-//       </div>
-//     </div>
-//   );
-// }
-//
-// function Cards(): JSX.Element {
-//   return (
-//     <section class="m-8 @container grid grid-cols-2 w-full mx-auto max-w-4xl gap-12 ">
-//       <Card />
-//       <Card />
-//       <Card />
-//     </section>
-//   );
-// }
-
-// const EMAILS = ["johnsmith@outlook.com", "mary@gmail.com", "djacobs@move.org"];
-//
-// function fetchUserName(name: string): Promise<unknown> {
-//   return new Promise((resolve) => {
-//     setTimeout(() => resolve(EMAILS.indexOf(name) > -1), 200);
-//   });
-// }
-
-// <section class="hidden">
-//   <div class="grid gap-2">
-//     <For each={todos}>
-//       {(todo, i) => (
-//         <div class="flex gap-4 w-full mx-auto items-center">
-//           <input
-//             type="checkbox"
-//             checked={todo.done}
-//             onChange={(e) =>
-//               setTodos(i(), "done", e.currentTarget.checked)
-//             }
-//             data-tooltip={`Consolidate ${todo.title}`}
-//             data-placement="right"
-//             class="form-checkbox  bg-background rounded"
-//           />
-//           <input
-//             type="text"
-//             value={todo.title}
-//             onChange={(e) =>
-//               setTodos(i(), "title", e.currentTarget.value)
-//             }
-//             class="form-input bg-background w-full "
-//           />
-//           <button
-//             class=""
-//             onClick={() => setTodos((t) => removeIndex(t, i()))}
-//             data-tooltip={`Delete ${todo.title}`}
-//           >
-//             x
-//           </button>
-//         </div>
-//       )}
-//     </For>
-//   </div>
-// </section>
