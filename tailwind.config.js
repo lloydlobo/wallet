@@ -67,10 +67,25 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: 0 },
         },
+        "icon-spinslide": {
+          "0%": {
+            "transform": "translateX(0%) rotate(72deg)"
+          },
+          "25%": {
+            "transform": "translateX(25%) rotate(180deg)"
+          },
+          "85%": {
+            "transform": "translateX(65%) rotate(240deg) scale(0.9)"
+          },
+          "100%": {
+            "transform": "translateX(80%) rotate(360deg) scale(0.8)"
+          }
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "icon-spinslide": "icon-spinslide 3s infinite alternate",
       },
     },
   },

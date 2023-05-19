@@ -4,7 +4,7 @@ import {
   CrossIcon,
   HamburgerIcon,
   PlusIcon,
-  SettingsIcon,
+  SettingsIcon
 } from "@/components/icons";
 import { ListItem } from "@/components/ListItem";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -23,10 +23,11 @@ import {
   onCleanup,
   onMount,
   Setter,
-  Show,
+  Show
 } from "solid-js";
 import { JSX } from "solid-js/jsx-runtime";
 import { Skeleton } from "./components/ui/skeleton";
+import { cn } from "./lib/cn";
 
 type TGroupedExpense = [string, TDatabaseExpense[]];
 
@@ -36,14 +37,14 @@ async function fetchUser(id: unknown) {
 
 const ErrorMessage = (props: {
   error:
-    | number
-    | boolean
-    | Node
-    | JSX.ArrayElement
-    | JSX.FunctionElement
-    | (string & {})
-    | null
-    | undefined;
+  | number
+  | boolean
+  | Node
+  | JSX.ArrayElement
+  | JSX.FunctionElement
+  | (string & {})
+  | null
+  | undefined;
 }) => <span class="error-message">{props.error}</span>;
 
 /**
@@ -86,53 +87,41 @@ const SkeletonSection = () => (
 );
 
 const App: Component = () => {
+  // z.min(640).max(1040)
+  const breakpointSM: number = 640; // tailwind sm:640px.
+
   const { formStore, updateFormField, submit, clearField } = useForm();
 
   const [expenses, setExpenses] = createSignal<TDatabaseExpense[] | null>(null);
-  const [groupedState, setGroupedState] = createSignal<
-    TGroupedExpense[] | null
-  >(null);
-
+  const [groupedState, setGroupedState] = createSignal<TGroupedExpense[] | null>(null); // prettier-ignore
   const [isFormOpen, setIsFormOpen] = createSignal<boolean>(false);
   const [isAsideOpen, setIsAsideOpen] = createSignal<boolean>(true);
-  const [isItemModalOpen, setIsItemModalOpen] = createSignal(false);
+  const [isItemModalOpen, setIsItemModalOpen] = createSignal<boolean>(false); // Child modal of each list item prop drilled.
 
-  const breakpointSM = 640; // tailwind sm:640px.
-
-  let asideRef: HTMLDivElement | undefined;
   let asideOverlayRef: HTMLDivElement | undefined;
 
-  createEffect(() => {
-    if (
-      !isItemModalOpen() &&
-      isAsideOpen() &&
-      asideRef instanceof HTMLElement
-    ) {
-      document.addEventListener("keydown", closeAsideOnEscape);
-      if (asideOverlayRef) {
-        asideOverlayRef.addEventListener(
-          "touchstart",
-          closeAsideOnOverlayInteraction
-        );
-        asideOverlayRef.addEventListener(
-          "mousedown",
-          closeAsideOnOverlayInteraction
-        );
-      }
+  onMount(() => {
+    window.addEventListener("resize", handleResize);
+    document.addEventListener("keydown", onKeydownShortcuts);
+    if (isSmScreen() && isAsideOpen()) {
+      toggleSidebar();
     }
 
     onCleanup(() => {
-      document.removeEventListener("keydown", closeAsideOnEscape);
-      if (asideOverlayRef) {
-        asideOverlayRef.removeEventListener(
-          "touchstart",
-          closeAsideOnOverlayInteraction
-        );
-        asideOverlayRef.removeEventListener(
-          "mousedown",
-          closeAsideOnOverlayInteraction
-        );
-      }
+      window.removeEventListener("resize", handleResize);
+      document.removeEventListener("keydown", onKeydownShortcuts);
+    });
+  });
+
+  createEffect(() => {
+    if (!isItemModalOpen() && isAsideOpen()) {
+      asideOverlayRef?.addEventListener("touchstart", toggleSidebar);
+      asideOverlayRef?.addEventListener("mousedown", toggleSidebar);
+    }
+
+    onCleanup(() => {
+      asideOverlayRef?.removeEventListener("touchstart", toggleSidebar);
+      asideOverlayRef?.removeEventListener("mousedown", toggleSidebar);
     });
   });
 
@@ -140,33 +129,26 @@ const App: Component = () => {
     const data = await getDB();
     if (!data) return;
     setExpenses(data);
+
     const items = expenses();
     if (!items) return;
     const grouped = groupedItems(radixSort(items, Ordering.Greater));
     if (!grouped) return;
     setGroupedState(Object.entries(grouped));
+
+    onCleanup(() => {
+      setExpenses(null);
+      setGroupedState(null);
+    })
   });
 
   const isSmScreen = (): boolean => !(window.innerWidth >= breakpointSM);
-
-  onMount(() => {
-    if (isSmScreen() && isAsideOpen()) {
-      toggleSidebar();
-    }
-    window.addEventListener("resize", handleResize);
-    onCleanup(() => {
-      window.removeEventListener("resize", handleResize);
-    });
-  });
-
   const toggleSidebar = () => setIsAsideOpen((prev) => !prev);
-  const closeAsideOnOverlayInteraction = () => setIsAsideOpen(false);
-  const handleOpenAsideMenu = (
-    _ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }
-  ): boolean => setIsAsideOpen(!isAsideOpen());
-  const closeAsideOnEscape = (ev: KeyboardEvent) => {
+  const onKeydownShortcuts = (ev: KeyboardEvent) => {
     if (ev.key === "Escape") {
       setIsAsideOpen(false);
+    } else if (ev.key === "Meta") {
+      setIsAsideOpen(true);
     }
   };
   function handleResize(this: Window, _ev: UIEvent) {
@@ -176,18 +158,13 @@ const App: Component = () => {
       toggleSidebar();
     }
   }
-
   async function handleSubmitForm(
-    ev: Event & { submitter: HTMLElement } & {
-      currentTarget: HTMLFormElement;
-      target: Element;
-    }
+    ev: Event & { submitter: HTMLElement } & { currentTarget: HTMLFormElement; target: Element; }
   ) {
     ev.preventDefault();
     await submit(formStore);
     setIsFormOpen(false);
   }
-
   function handleShowForm(
     ev: MouseEvent & { currentTarget: HTMLInputElement; target: Element }
   ): void {
@@ -196,25 +173,20 @@ const App: Component = () => {
     (document.getElementById("formName") as HTMLElement).focus();
   }
 
-  // {/* <div class={`h-screen @container ${styles.app} ${styles.open}`}> */}
-  // {/* <main class={`${styles.main} ${isAsideOpen() ? styles.open + " @md:max-w-4xl" : "@md:max-w-4xl" } container flex h-full flex-col justify-between space-y-0 px-8 3xl:w-full bg-muted`} > */}
-  // {/* <div class={styles.list_window}> */}
   return (
     <div class="flex h-screen max-h-screen flex-col overflow-y-clip ">
-      <Header handleOpenAsideMenu={handleOpenAsideMenu} />
+      <Header toggleSidebar={toggleSidebar} />
       <div class="relative">
         <Aside
           isAsideOpen={isAsideOpen()}
-          asideOverlayRef={asideOverlayRef}
-          asideRef={asideRef}
+          ref={asideOverlayRef}
         />
       </div>
 
       {/* TODO: Style scroll bar from App.module.css */}
       <main
-        class={`${styles.workWindow} ${
-          isAsideOpen() ? "md:ms-[233px]" : ""
-        } md:mt-8! flex-1 flex-grow overflow-y-auto bg-muted px-6 pt-6 md:mx-16 md:rounded-t-3xl`}
+        class={`${styles.workWindow} ${isAsideOpen() ? "md:ms-[233px]" : ""
+          } md:mt-8! flex-1 flex-grow overflow-y-auto bg-muted px-6 pt-6 md:mx-16 md:rounded-t-3xl`}
       >
         <Workspace
           groupedState={groupedState()}
@@ -223,9 +195,8 @@ const App: Component = () => {
       </main>
 
       <footer
-        class={`${
-          isAsideOpen() ? "md:ms-[233px]" : ""
-        } bg-muted px-8 pb-2 md:mx-16 md:mb-6 md:rounded-b-3xl`}
+        class={`${isAsideOpen() ? "md:ms-[233px]" : ""
+          } bg-muted px-8 pb-2 md:mx-16 md:mb-6 md:rounded-b-3xl`}
       >
         {/* TODO: Call the setter state function before passing them as props. */}
         <CreateNewExpense
@@ -243,13 +214,6 @@ const App: Component = () => {
 };
 
 export default App;
-
-type AsideProps = {
-  // isAsideOpen: Accessor<boolean>;
-  isAsideOpen: boolean;
-  asideOverlayRef: HTMLDivElement | undefined;
-  asideRef: HTMLDivElement | undefined;
-};
 
 type CreateNewExpenseProps = {
   isFormOpen: Accessor<boolean>;
@@ -422,33 +386,35 @@ function CreateNewExpense(props: CreateNewExpenseProps) {
   );
 }
 
+type AsideProps = {
+  // isAsideOpen: Accessor<boolean>;
+  isAsideOpen: boolean;
+  ref: HTMLDivElement | undefined;
+};
 function Aside(props: AsideProps): JSX.Element {
   return (
     <aside
-      class={`${styles.aside} transition-transform ${
-        props.isAsideOpen ? styles.open + "" : ""
-      }`}
+      class={`${styles.aside} transition-transform ${props.isAsideOpen ? styles.open + "" : ""
+        }`}
     >
       {/* Sidebar Overlay */}
       <div
-        ref={props.asideOverlayRef}
+        ref={props.ref}
         aria-label="aside-backdrop"
-        class={`${
-          props.isAsideOpen
-            ? styles.open +
-              "opacity-70 blur-none transition-all duration-150 delay-0  ease-linear"
-            : "-translate-x-full opacity-0 blur-2xl transition-all duration-100 delay-0  "
-        } ease absolute inset-0 -z-10 h-screen w-screen bg-muted/70 bg-blend-overlay md:hidden`}
+        class={`${props.isAsideOpen
+          ? styles.open +
+          "opacity-70 blur-none transition-all duration-150 delay-0  ease-linear"
+          : "-translate-x-full opacity-0 blur-2xl transition-all duration-100 delay-0  "
+          } ease absolute inset-0 -z-10 h-screen w-screen bg-muted/70 bg-blend-overlay md:hidden`}
       />
 
       {/* Sidebar Content */}
       <div
-        ref={props.asideRef}
         class="z-10 flex h-full flex-col justify-between bg-background pb-20"
       >
         <div class="mt-2 grid text-lg [&>*]:tracking-wide [&>button]:rounded-e-full">
-          <button class={styles.button}>
-            <ActivityIcon />
+          <button class={cn(styles.button)}>
+            <ActivityIcon class="hover:animate-icon-spinslide" />
             <div class="settings">Activity</div>
           </button>
           <button class={styles.button}>
@@ -458,7 +424,9 @@ function Aside(props: AsideProps): JSX.Element {
         </div>
 
         <div class="border border-transparent border-t-muted-foreground/50 ">
-          <button class={`${styles.button} my-2 rounded-e-full  text-lg `}>
+          <button
+            class={`${styles.button} my-2 rounded-e-full text-lg  [&_svg]:hover:animate-icon-spinslide `}
+          >
             <ThemeToggle />
           </button>
         </div>
@@ -467,14 +435,7 @@ function Aside(props: AsideProps): JSX.Element {
   );
 }
 
-type HeaderProps = {
-  handleOpenAsideMenu: (
-    ev: MouseEvent & {
-      currentTarget: HTMLButtonElement;
-      target: Element;
-    }
-  ) => boolean;
-};
+type HeaderProps = { toggleSidebar: () => boolean; };
 function Header(props: HeaderProps): JSX.Element {
   return (
     <header
@@ -484,7 +445,7 @@ function Header(props: HeaderProps): JSX.Element {
         <div class="flex place-content-center items-center justify-center gap-4">
           <button
             type="button"
-            onClick={(ev) => props.handleOpenAsideMenu(ev)}
+            onClick={props.toggleSidebar}
             title="Main Menu"
             class="z-10 grid place-self-center border border-transparent"
           >

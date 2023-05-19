@@ -24,10 +24,10 @@ export function ThemeToggle(): JSX.Element {
       <div class="flex cursor-pointer gap-1">
         <div class="">
           <Show when={mode() === "light"}>
-            <MoonIcon />
+            <MoonIcon class="" />
           </Show>
           <Show when={mode() === "dark"}>
-            <SunIcon />
+            <SunIcon class="" />
           </Show>
         </div>
         <label for="themeToggle" class="w-full  flex-shrink-0 cursor-pointer">
