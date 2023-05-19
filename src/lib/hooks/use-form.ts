@@ -2,40 +2,11 @@
 
 import { createStore } from "solid-js/store";
 import { insertRowsDB } from "../db/controllers";
-import { TDatabaseExpense } from "../types-supabase";
-
-const submit = async (formStore: Partial<TDatabaseExpense>) => {
-  // Filter out unnecessary data.
-  const dataToSubmit: Partial<TDatabaseExpense> = {
-    amount: formStore.amount,
-    created_at: formStore.created_at,
-    description: formStore.description,
-    is_cash: formStore.is_cash,
-    name: formStore.name,
-    transaction_date: formStore.transaction_date,
-    updated_at: formStore.updated_at,
-  }; // owner: "", id: (expenses()?.length ?? -1) + 1,
-  console.log(`submitting ${JSON.stringify(dataToSubmit)}`);
-
-  // NOTE: Submit to back-end server or database.
-  const VITE_SUPABASE_OWNER = import.meta.env.VITE_SUPABASE_OWNER;
-  const now = new Date();
-  const dataWithOwnerToSubmit: Partial<TDatabaseExpense> = {
-    name: formStore.name,
-    description: formStore.description,
-    amount: formStore.amount,
-    is_cash: formStore.is_cash,
-    owner: VITE_SUPABASE_OWNER,
-    created_at: now.toISOString(),
-    updated_at: now.toISOString(),
-    transaction_date: formStore.transaction_date ?? now.toISOString(),
-  };
-  await insertRowsDB([dataWithOwnerToSubmit]);
-};
+import { TDatabaseExpense, TUpdateExpense } from "../types-supabase";
 
 export function useForm() {
   const now = new Date().toISOString();
-  const [formStore, setFormStore] = createStore<Partial<TDatabaseExpense>>({
+  const [formStore, setFormStore] = createStore<TUpdateExpense>({
     amount: 0,
     created_at: now,
     description: null, // id: (expenses()?.length ?? -1) + 1,
@@ -66,5 +37,39 @@ export function useForm() {
     });
   };
 
-  return { formStore, submit, updateFormField, clearField };
+  // TODO: Comparedto react-hook-forms, just use this to return formStore value.
+  // PERF: We can move submit in useForm's scope, to access formStore value?
+  const submit = async (onSubmit: (data: TUpdateExpense) => Promise<void>) => {
+    // Filter out unnecessary data.
+    const dataToSubmit: Partial<TDatabaseExpense> = {
+      amount: formStore.amount,
+      created_at: formStore.created_at,
+      description: formStore.description,
+      is_cash: formStore.is_cash,
+      name: formStore.name,
+      transaction_date: formStore.transaction_date,
+      updated_at: formStore.updated_at,
+    }; // owner: "", id: (expenses()?.length ?? -1) + 1,
+    console.log(`submitting ${JSON.stringify(dataToSubmit)}`);
+
+    // NOTE: Submit to back-end server or database.
+    const VITE_SUPABASE_OWNER = import.meta.env.VITE_SUPABASE_OWNER;
+
+    const now = new Date();
+    const dataWithOwnerToSubmit: TUpdateExpense = {
+      name: formStore.name,
+      description: formStore.description,
+      amount: formStore.amount,
+      is_cash: formStore.is_cash,
+      owner: VITE_SUPABASE_OWNER,
+      created_at: now.toISOString(),
+      updated_at: now.toISOString(),
+      transaction_date: formStore.transaction_date ?? now.toISOString(),
+    };
+
+    // await insertRowsDB([dataWithOwnerToSubmit]);
+    await onSubmit(dataWithOwnerToSubmit);
+  };
+
+  return { formStore, setFormStore, submit, updateFormField, clearField };
 }

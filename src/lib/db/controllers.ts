@@ -1,6 +1,6 @@
 import { Databases } from "../enums";
 import { supabase } from "../supabase-client";
-import { TDatabaseExpense } from "../types-supabase";
+import { TDatabaseExpense, TUpdateExpense } from "../types-supabase";
 
 export async function getDB(): Promise<TDatabaseExpense[] | null | undefined> {
   try {
@@ -41,15 +41,24 @@ export async function deleteRowsDB(props: TDeleteRow) {
   console.log(data, error);
 }
 
-export async function updateRowsDB() {
+type TUpdateRowsDB = {
+  from: TUpdateExpense;
+  to: TUpdateExpense;
+};
+
+// .update({ name: 'Coca Cola' })
+// .eq('name', 'Coke')
+// .update({ name: "Coke" })
+// .eq("name", "Coca Cola")
+export async function updateRowsDB(props: TUpdateRowsDB) {
+  console.log({ props });
   const { data, error } = await supabase
     .from("expenses")
-    // .update({ name: 'Coca Cola' })
-    // .eq('name', 'Coke')
-    .update({ name: "Coke" })
-    .eq("name", "Coca Cola")
+    .update(props.to)
+    .eq("id", props.from.id)
     .select(); // Note: to update the record and return it use `.select()`.
   console.log(data, error);
+  return data;
 }
 
 export async function insertDB() {

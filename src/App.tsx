@@ -13,7 +13,7 @@ import { getDB } from "@/lib/db/controllers";
 import { Ordering } from "@/lib/enums";
 import { useForm } from "@/lib/hooks/use-form";
 import { radixSort } from "@/lib/radix-sort";
-import { TDatabaseExpense } from "@/lib/types-supabase";
+import { TRowExpense, TUpdateExpense } from "@/lib/types-supabase";
 import {
   Accessor,
   Component,
@@ -29,85 +29,111 @@ import { JSX } from "solid-js/jsx-runtime";
 import { z } from "zod";
 import { Skeleton } from "./components/ui/skeleton";
 import { cn } from "./lib/cn";
+import { insertRowsDB } from "@/lib/db/controllers";
 
-type TGroupedExpense = [string, TDatabaseExpense[]];
+type TGroupedExpense = [string, TRowExpense[]];
 
-async function fetchUser(id: unknown) {
-  return (await fetch(`https://swapi.dev/api/people/${id}/`)).json();
-} // fetcher: ResourceFetcher<true, unknown, unknown>, options: InitializedResourceOptions<unknown, true>
-
-const ErrorMessage = (props: {
-  error:
-    | number
-    | boolean
-    | Node
-    | JSX.ArrayElement
-    | JSX.FunctionElement
-    | (string & {})
-    | null
-    | undefined;
-}) => <span class="error-message">{props.error}</span>;
-
-/**
- * Group the items based on months and years using the reduce() method.
- * @param items - Array of TDatabaseExpense items to be grouped.
- * @returns An object where keys represent month and year combinations, and values are arrays of TDatabaseExpense
- * items for each group.
- */
-function groupedItems(items: TDatabaseExpense[] | null) {
-  if (items) {
-    return items.reduce((acc: { [key: string]: TDatabaseExpense[] }, item) => {
-      const month = new Date(item.transaction_date ?? "").toLocaleString(
-        "default",
-        { month: "long" }
-      );
-      const year = new Date(item.transaction_date ?? "")
-        .getFullYear()
-        .toString();
-      const key = `${month} ${year}`;
-      if (!acc[key]) {
-        acc[key] = [];
-      }
-      acc[key].push(item);
-      return acc;
-    }, {});
-  }
-}
-
-const SkeletonSection = () => (
-  <section
-    class="justify-center! mx-auto flex items-center space-x-4 rounded-xl bg-card p-6 transition-all"
-    style={{ "padding-block": "2rem" }}
-  >
-    <Skeleton class={"h-12 w-12 rounded-full"} />
-    <div class="space-y-2">
-      <Skeleton class={"h-4 w-[250px]"} />
-      <Skeleton class={"h-4 w-[200px]"} />
-    </div>
-  </section>
-);
-
-const breakpointSchema = z.number().min(640).max(1040).positive();
-type TBreakpoint = z.infer<typeof breakpointSchema>;
-const breakpointSM: TBreakpoint = 640; // tailwind sm:640px.
-const validBreakpointSM = breakpointSchema.parse(breakpointSM);
+// const breakpointSchema = z.number().min(640).max(1040).positive();
+// type TBreakpoint = z.infer<typeof breakpointSchema>;
+// const breakpointSM: TBreakpoint = 640; // tailwind sm:640px.
+// const validBreakpointSM = breakpointSchema.parse(breakpointSM);
 
 const App: Component = () => {
-  const { formStore, updateFormField, submit, clearField } = useForm();
+  const {
+    formStore,
+    updateFormField,
+    submit: handleSubmit,
+    clearField,
+  } = useForm();
 
-  const [expenses, setExpenses] = createSignal<TDatabaseExpense[] | null>(null);
+  const [expenses, setExpenses] = createSignal<TRowExpense[] | null>(null);
   const [groupedState, setGroupedState] = createSignal<TGroupedExpense[] | null>(null); // prettier-ignore
+
   const [isFormOpen, setIsFormOpen] = createSignal<boolean>(false);
   const [isAsideOpen, setIsAsideOpen] = createSignal<boolean>(true);
   const [isItemModalOpen, setIsItemModalOpen] = createSignal<boolean>(false); // Child modal of each list item prop drilled.
 
   let asideOverlayRef: HTMLDivElement | undefined;
 
+  const isSmScreen = (): boolean => window.innerWidth <= 720;
+  const toggleSidebar = () => setIsAsideOpen((prev) => !prev);
+  const onKeydownShortcuts = (ev: KeyboardEvent) => {
+    if (ev.key === "Escape") {
+      setIsAsideOpen(false);
+    } else if (ev.ctrlKey && ev.shiftKey && ev.key === "E") {
+      toggleSidebar(); // setIsAsideOpen(true);
+    } else if (ev.ctrlKey && ev.key === "k") {
+      ev.preventDefault(); // Avoid browser focus on address bar.
+      alert("Command"); //  TODO: Use cmdk like command-pallete.
+    }
+  };
+  function handleResize(this: Window, _ev: UIEvent) {
+    if (isSmScreen() && isAsideOpen()) {
+      toggleSidebar(); // alert("if-" + window.innerWidth)
+    } else if (!isSmScreen && !isAsideOpen()) {
+      toggleSidebar(); // alert("else-if-" + window.innerWidth)
+    } else {
+      // alert("else-" + window.innerWidth)
+    }
+  }
+
+  const onSubmit = async (data: TUpdateExpense) => {
+    console.log({ data });
+    await insertRowsDB([data]);
+  };
+
+  async function handleSubmitForm(
+    ev: Event & { submitter: HTMLElement } & {
+      currentTarget: HTMLFormElement;
+      target: Element;
+    }
+  ) {
+    ev.preventDefault();
+    await handleSubmit(onSubmit); // NOTE: Logic to handle submiting to server.
+    setIsFormOpen(false);
+  }
+
+  function handleShowForm(
+    ev: MouseEvent & { currentTarget: HTMLInputElement; target: Element }
+  ): void {
+    ev.preventDefault();
+    setIsFormOpen((_prev) => true);
+    (document.getElementById("formName") as HTMLElement).focus();
+  }
+
+  /**
+   * Group the items based on months and years using the reduce() method.
+   * @param items - Array of TRowExpense items to be grouped.
+   * @returns An object where keys represent month and year combinations, and values are arrays of TRowExpense
+   * items for each group.
+   */
+  function getGroupedItems(
+    items: TRowExpense[] | null
+  ): { [key: string]: TRowExpense[] } | undefined {
+    return items?.reduce((acc: { [key: string]: TRowExpense[] }, item) => {
+      const itemDate = new Date(
+        item.transaction_date ?? item.created_at ?? item.updated_at
+      );
+
+      const month = itemDate.toLocaleString("default", { month: "long" });
+      const year = itemDate.getFullYear().toString();
+
+      const key = `${month} ${year}`;
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(item);
+
+      return acc;
+    }, {});
+  }
+
   onMount(() => {
     window.addEventListener("resize", handleResize);
     document.addEventListener("keydown", onKeydownShortcuts);
+
     if (isSmScreen() && isAsideOpen()) {
-      toggleSidebar();
+      toggleSidebar(); // alert("triggered")
     }
 
     onCleanup(() => {
@@ -135,7 +161,7 @@ const App: Component = () => {
 
     const items = expenses();
     if (!items) return;
-    const grouped = groupedItems(radixSort(items, Ordering.Greater));
+    const grouped = getGroupedItems(radixSort(items, Ordering.Greater));
     if (!grouped) return;
     setGroupedState(Object.entries(grouped));
 
@@ -144,45 +170,6 @@ const App: Component = () => {
       setGroupedState(null);
     });
   });
-
-  const isSmScreen = (): boolean => !(window.innerWidth >= validBreakpointSM);
-  const toggleSidebar = () => setIsAsideOpen((prev) => !prev);
-  const onKeydownShortcuts = (ev: KeyboardEvent) => {
-    console.log(ev);
-    if (ev.key === "Escape") {
-      setIsAsideOpen(false);
-    } else if (ev.ctrlKey && ev.shiftKey && ev.key === "E") {
-      toggleSidebar();
-      // setIsAsideOpen(true);
-    } else if (ev.ctrlKey && ev.key === "k") {
-      ev.preventDefault(); // Avoid browser focus on address bar.
-      alert("Command"); //  TODO: Use cmdk like command-pallete.
-    }
-  };
-  function handleResize(this: Window, _ev: UIEvent) {
-    if (isSmScreen() && isAsideOpen()) {
-      toggleSidebar();
-    } else if (!isSmScreen && !isAsideOpen()) {
-      toggleSidebar();
-    }
-  }
-  async function handleSubmitForm(
-    ev: Event & { submitter: HTMLElement } & {
-      currentTarget: HTMLFormElement;
-      target: Element;
-    }
-  ) {
-    ev.preventDefault();
-    await submit(formStore);
-    setIsFormOpen(false);
-  }
-  function handleShowForm(
-    ev: MouseEvent & { currentTarget: HTMLInputElement; target: Element }
-  ): void {
-    ev.preventDefault();
-    setIsFormOpen((_prev) => true);
-    (document.getElementById("formName") as HTMLElement).focus();
-  }
 
   return (
     <div class="flex h-screen max-h-screen flex-col overflow-y-clip ">
@@ -195,7 +182,7 @@ const App: Component = () => {
       <main
         class={`${styles.workWindow} ${
           isAsideOpen() ? "md:ms-[233px]" : ""
-        } md:mt-8! flex-1 flex-grow overflow-y-auto bg-muted px-6 pt-6 md:mx-16 md:rounded-t-3xl`}
+        } md:mt-8! flex-1 flex-grow overflow-y-auto bg-muted px-2 pt-6 md:mx-16 md:rounded-t-3xl md:px-6`}
       >
         <Workspace
           groupedState={groupedState()}
@@ -209,7 +196,7 @@ const App: Component = () => {
         } bg-muted px-8 pb-2 md:mx-16 md:mb-6 md:rounded-b-3xl`}
       >
         {/* TODO: Call the setter state function before passing them as props. */}
-        <CreateNewExpense
+        <FormCreateExpense
           isFormOpen={isFormOpen}
           handleShowForm={handleShowForm}
           handleSubmitForm={handleSubmitForm}
@@ -236,7 +223,7 @@ type CreateNewExpenseProps = {
       target: Element;
     }
   ) => Promise<void>;
-  formStore: Partial<TDatabaseExpense>;
+  formStore: Partial<TRowExpense>;
   updateFormField: (fieldName: string) => (ev: Event) => void;
   setIsFormOpen: Setter<boolean>;
   clearField: (fieldName: string) => void;
@@ -247,6 +234,19 @@ type WorkspaceProps = {
   setIsItemModalOpen: Setter<boolean>;
 };
 function Workspace(props: WorkspaceProps) {
+  const SkeletonSection = () => (
+    <section
+      class="justify-center! mx-auto flex items-center space-x-4 rounded-xl bg-card p-6 transition-all"
+      style={{ "padding-block": "2rem" }}
+    >
+      <Skeleton class={"h-12 w-12 rounded-full"} />
+      <div class="space-y-2">
+        <Skeleton class={"h-4 w-[250px]"} />
+        <Skeleton class={"h-4 w-[200px]"} />
+      </div>
+    </section>
+  );
+
   return (
     <Show
       when={props.groupedState}
@@ -254,18 +254,16 @@ function Workspace(props: WorkspaceProps) {
         <For each={Array.from({ length: 4 })}>{(_) => <SkeletonSection />}</For>
       }
     >
-      <For
-        each={props.groupedState as unknown[] as [string, TDatabaseExpense[]]}
-      >
+      <For each={props.groupedState as unknown[] as [string, TRowExpense[]]}>
         {(items) => (
           <section class="mx-1 mb-4 h-fit space-y-1 rounded-3xl bg-card p-6">
             <h2 class="tracking-tighter text-muted-foreground">
               {items[0].toString()}
             </h2>
             <div class="group_items">
-              <Show when={items[1] as unknown as TDatabaseExpense[]}>
-                <For each={items[1] as unknown as TDatabaseExpense[]}>
-                  {(item: TDatabaseExpense) => (
+              <Show when={items[1] as unknown as TRowExpense[]}>
+                <For each={items[1] as unknown as TRowExpense[]}>
+                  {(item: TRowExpense) => (
                     <ListItem
                       item={item}
                       setIsItemModalOpen={props.setIsItemModalOpen}
@@ -281,11 +279,10 @@ function Workspace(props: WorkspaceProps) {
   );
 }
 
-function CreateNewExpense(props: CreateNewExpenseProps) {
+function FormCreateExpense(props: CreateNewExpenseProps) {
+  // class="top-full! px-12! sticky bottom-0 left-0 right-0 m-0 mx-0 w-full flex-shrink-0 place-self-end bg-background px-4 py-4 pb-8"
   return (
-    <div
-      class="" // class="top-full! px-12! sticky bottom-0 left-0 right-0 m-0 mx-0 w-full flex-shrink-0 place-self-end bg-background px-4 py-4 pb-8"
-    >
+    <div class="">
       <Show
         when={props.isFormOpen()}
         fallback={
@@ -325,7 +322,7 @@ function CreateNewExpense(props: CreateNewExpenseProps) {
             <div class={styles.formControl}>
               <label for="formAmount">Amount</label>
               <input
-                // value={formStore.amount}
+                // value={props.formStore.amount} // Note: Unitialized value so we don't see a 0
                 onInput={props.updateFormField("amount")}
                 id="formAmount"
                 type="number"
@@ -371,11 +368,12 @@ function CreateNewExpense(props: CreateNewExpenseProps) {
             </div>
           </div>
           <div class="grid">
-            <button title="Submit form" class="" type="submit">
+            <button data-create title="Submit form" class="" type="submit">
               <PlusIcon />
             </button>
             <button
               class=""
+              data-clear
               type="button"
               onClick={(ev) => {
                 ev.preventDefault();
@@ -497,3 +495,19 @@ function Header(props: HeaderProps): JSX.Element {
     </header>
   );
 }
+
+async function fetchUser(id: unknown) {
+  return (await fetch(`https://swapi.dev/api/people/${id}/`)).json();
+} // fetcher: ResourceFetcher<true, unknown, unknown>, options: InitializedResourceOptions<unknown, true>
+
+const ErrorMessage = (props: {
+  error:
+    | number
+    | boolean
+    | Node
+    | JSX.ArrayElement
+    | JSX.FunctionElement
+    | (string & {})
+    | null
+    | undefined;
+}) => <span class="error-message">{props.error}</span>;
