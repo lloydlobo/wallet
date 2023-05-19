@@ -13,8 +13,8 @@
  * O(n log n) to O(kn), which is a significant improvement if the number of items is large.
  */
 
-import { Ordering } from "@/lib/enums";
-import { TDatabaseExpense } from "@/lib/types-supabase";
+import { Ordering } from '@/lib/enums';
+import { TDatabaseExpense } from '@/lib/types-supabase';
 
 /**
  * Sorts the items based on their timestamps using the radix sort algorithm.
@@ -22,18 +22,13 @@ import { TDatabaseExpense } from "@/lib/types-supabase";
  * @param cmp - The ordering direction for the sort (Ordering.Less for ascending, Ordering.Greater for descending).
  * @returns The sorted array of items.
  */
-export function radixSort(
-  items: TDatabaseExpense[],
-  cmp: Ordering
-): TDatabaseExpense[] {
+export function radixSort(items: TDatabaseExpense[], cmp: Ordering): TDatabaseExpense[] {
   /**
    * Finds the maximum timestamp from the items array.
    */
   const maxTimestamp = Math.max(
     ...items.map((item) =>
-      new Date(
-        item.transaction_date ?? item.created_at ?? item.updated_at
-      ).getTime()
+      new Date(item.transaction_date ?? item.created_at ?? item.updated_at).getTime()
     )
   );
   let divisor = 1;
@@ -73,9 +68,7 @@ function countingSort(props: CountingSort): TDatabaseExpense[] {
    */
   for (const item of props.array) {
     const digit = Math.floor(
-      (new Date(
-        item.transaction_date ?? item.created_at ?? item.updated_at
-      ).getTime() /
+      (new Date(item.transaction_date ?? item.created_at ?? item.updated_at).getTime() /
         props.divisor) %
         10
     );

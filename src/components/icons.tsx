@@ -1,8 +1,6 @@
-import { JSX } from "solid-js/jsx-runtime";
+import { JSX } from 'solid-js/jsx-runtime';
 
-export function SaveIcon(
-  props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<SVGSVGElement>
-) {
+export function SaveIcon(props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -24,9 +22,7 @@ export function SaveIcon(
   );
 }
 
-export function CalendarIcon(
-  props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<SVGSVGElement>
-) {
+export function CalendarIcon(props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -49,9 +45,7 @@ export function CalendarIcon(
   );
 }
 
-export function PlusIcon(
-  props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<SVGSVGElement>
-) {
+export function PlusIcon(props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -74,9 +68,7 @@ export function PlusIcon(
   );
 }
 
-export function CrossIcon(
-  props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<SVGSVGElement>
-) {
+export function CrossIcon(props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -99,9 +91,7 @@ export function CrossIcon(
   );
 }
 
-export function SunIcon(
-  props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<SVGSVGElement>
-) {
+export function SunIcon(props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -130,9 +120,7 @@ export function SunIcon(
     </svg>
   );
 }
-export function MoonIcon(
-  props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<SVGSVGElement>
-) {
+export function MoonIcon(props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -182,9 +170,7 @@ export function HamburgerIcon(
   );
 }
 
-export function ActivityIcon(
-  props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<SVGSVGElement>
-) {
+export function ActivityIcon(props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -206,9 +192,7 @@ export function ActivityIcon(
   );
 }
 
-export function SettingsIcon(
-  props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<SVGSVGElement>
-) {
+export function SettingsIcon(props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

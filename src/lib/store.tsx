@@ -1,5 +1,5 @@
-import { createEffect } from "solid-js";
-import { createStore, SetStoreFunction, Store } from "solid-js/store";
+import { createEffect } from 'solid-js';
+import { createStore, SetStoreFunction, Store } from 'solid-js/store';
 
 /*
  * 
@@ -29,9 +29,7 @@ export function createLocalStoreTodos<T extends object>(
   init: T
 ): [Store<T>, SetStoreFunction<T>] {
   const localState = localStorage.getItem(name);
-  const [state, setState] = createStore<T>(
-    localState ? JSON.parse(localState) : init
-  );
+  const [state, setState] = createStore<T>(localState ? JSON.parse(localState) : init);
 
   createEffect(() => localStorage.setItem(name, JSON.stringify(state)));
 
@@ -54,9 +52,7 @@ export function createLocalStore<T extends object>(
   init: T
 ): [Store<T>, SetStoreFunction<T>] {
   const localState: string | null = localStorage.getItem(key);
-  const [state, setState] = createStore<T>(
-    localState ? JSON.parse(localState) : init
-  );
+  const [state, setState] = createStore<T>(localState ? JSON.parse(localState) : init);
   createEffect(() => localStorage.setItem(key, JSON.stringify(state)));
 
   return [state, setState];

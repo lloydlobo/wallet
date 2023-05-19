@@ -12,10 +12,7 @@ export enum WeekEnum {
 /**
  * Note: Initialized as global constant in this module scope to compute it once at build time
  */
-export const WEEK_DAYS: (string | WeekEnum)[] = Object.values(WeekEnum).slice(
-  0,
-  7
-);
+export const WEEK_DAYS: (string | WeekEnum)[] = Object.values(WeekEnum).slice(0, 7);
 
 export type DateComponents = {
   year: number;
@@ -25,7 +22,7 @@ export type DateComponents = {
 
 export function asDateComponents(date: Date): DateComponents {
   if (isNaN(date.getTime())) {
-    throw new Error("Invalid date format");
+    throw new Error('Invalid date format');
   }
   return {
     year: date.getFullYear(),
@@ -36,15 +33,15 @@ export function asDateComponents(date: Date): DateComponents {
 
 export function asHTMLInputDateValue(date: Date): string {
   if (isNaN(date.getTime())) {
-    throw new Error("Invalid date format");
+    throw new Error('Invalid date format');
   }
   const dateProps = asDateComponents(date);
   const arrDateProps: string[] = [
     dateProps.year.toString(),
-    (dateProps.month + 1).toString().padStart(2, "0"), // (0 - 11) + 1. 1->Jan, 12->Dec.
-    dateProps.date.toString().padStart(2, "0"),
+    (dateProps.month + 1).toString().padStart(2, '0'), // (0 - 11) + 1. 1->Jan, 12->Dec.
+    dateProps.date.toString().padStart(2, '0'),
   ];
-  return arrDateProps.join("-");
+  return arrDateProps.join('-');
 }
 
 // export function asDayOfWeek(weekDate: number): { weekDay: string; weekDayEnum: WeekEnum; } {
@@ -53,7 +50,7 @@ export function asDayOfWeek(date: Date): {
   weekDayEnum: WeekEnum;
 } {
   if (isNaN(date.getTime())) {
-    throw new Error("Invalid date format");
+    throw new Error('Invalid date format');
   }
   const weekDate = date.getDay();
   const normalizedWeekDate = weekDate % 7;

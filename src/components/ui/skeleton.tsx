@@ -1,4 +1,4 @@
-import { cn } from "@/lib/cn";
+import { cn } from '@/lib/cn';
 
 type Props = {
   class?: string;
@@ -7,7 +7,7 @@ type Props = {
 function Skeleton(props: Props) {
   return (
     <div
-      class={cn("animate-pulse rounded-md bg-muted", props.class)}
+      class={cn('animate-pulse rounded-md bg-muted', props.class)}
       // {...props}
     />
   );
