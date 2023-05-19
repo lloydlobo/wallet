@@ -99,8 +99,8 @@ export function ListItem(props: ListItemProps): JSX.Element {
   ) => {
     ev.preventDefault();
     // `show()` <- Displays the dialog element. vs `showModal()` Displays the dialog as modal -> itemDialogRef?.showModal();
-    itemDialogRef?.show();
-    // itemDialogRef?.showModal();
+    // itemDialogRef?.show();
+    itemDialogRef?.showModal();
     props.setIsItemModalOpen(true); // Tell parent that our dialog is open, used to signal that `Escape` key doesn't close <aside> when <dialog> is open.
     return setIsDialogOpen(true);
   };
@@ -176,7 +176,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
         // Opening dialogs via HTMLDialogElement.show() is preferred over the toggling of the boolean open attribute.
         // open={isDialogOpen()} // Because this dialog was opened via the open attribute, it is non-modal.
         // Note: Remove inset-0 to let dialog open under the selected item that toggles it.
-        class="inset-0 z-50 aspect-video w-full max-w-md overflow-x-clip rounded-2xl border border bg-card text-foreground"
+        class="inset-0 z-50 w-full max-w-md overflow-x-clip rounded-2xl border border bg-card text-foreground"
       >
         <form method="dialog" action="" class="">
           <div class="flex flex-col space-y-2">
@@ -220,7 +220,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
               <Textarea
                 value={props.item.description ?? ""}
                 ref={formTextareaRef}
-              // class="form-textarea  border-transparent border-b-muted"
+                // class="form-textarea  border-transparent border-b-muted"
               />
               <Input
                 type="date"
@@ -248,7 +248,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
                   <button
                     onClick={(ev) => {
                       ev.preventDefault();
-                      deleteRowsDB({ id: props.item.id.toString() })
+                      deleteRowsDB({ id: props.item.id.toString() });
                       return setShowModal(false);
                     }}
                     class="text-destructive"

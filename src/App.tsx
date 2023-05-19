@@ -15,12 +15,14 @@ import { useForm } from "@/lib/hooks/use-form";
 import { radixSort } from "@/lib/radix-sort";
 import { TDatabaseExpense } from "@/lib/types-supabase";
 import {
+  Accessor,
   Component,
   createEffect,
   createSignal,
   For,
   onCleanup,
   onMount,
+  Setter,
   Show,
 } from "solid-js";
 import { JSX } from "solid-js/jsx-runtime";
@@ -34,14 +36,14 @@ async function fetchUser(id: unknown) {
 
 const ErrorMessage = (props: {
   error:
-  | number
-  | boolean
-  | Node
-  | JSX.ArrayElement
-  | JSX.FunctionElement
-  | (string & {})
-  | null
-  | undefined;
+    | number
+    | boolean
+    | Node
+    | JSX.ArrayElement
+    | JSX.FunctionElement
+    | (string & {})
+    | null
+    | undefined;
 }) => <span class="error-message">{props.error}</span>;
 
 /**
@@ -69,6 +71,19 @@ function groupedItems(items: TDatabaseExpense[] | null) {
     }, {});
   }
 }
+
+const SkeletonSection = () => (
+  <section
+    class="justify-center! mx-auto flex items-center space-x-4 rounded-xl bg-card transition-all"
+    style={{ "padding-block": "2rem" }}
+  >
+    <Skeleton class={"h-12 w-12 rounded-full"} />
+    <div class="space-y-2">
+      <Skeleton class={"h-4 w-[250px]"} />
+      <Skeleton class={"h-4 w-[200px]"} />
+    </div>
+  </section>
+);
 
 const App: Component = () => {
   const { formStore, updateFormField, submit, clearField } = useForm();
@@ -133,6 +148,7 @@ const App: Component = () => {
   });
 
   const isSmScreen = (): boolean => !(window.innerWidth >= breakpointSM);
+
   onMount(() => {
     if (isSmScreen() && isAsideOpen()) {
       toggleSidebar();
@@ -145,13 +161,15 @@ const App: Component = () => {
 
   const toggleSidebar = () => setIsAsideOpen((prev) => !prev);
   const closeAsideOnOverlayInteraction = () => setIsAsideOpen(false);
-  const handleOpenAsideMenu = () => setIsAsideOpen(!isAsideOpen());
-  const closeAsideOnEscape = (event: KeyboardEvent) => {
-    if (event.key === "Escape") {
+  const handleOpenAsideMenu = (
+    _ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }
+  ): boolean => setIsAsideOpen(!isAsideOpen());
+  const closeAsideOnEscape = (ev: KeyboardEvent) => {
+    if (ev.key === "Escape") {
       setIsAsideOpen(false);
     }
   };
-  function handleResize(this: Window, ev: UIEvent) {
+  function handleResize(this: Window, _ev: UIEvent) {
     if (isSmScreen() && isAsideOpen()) {
       toggleSidebar();
     } else if (!isSmScreen && !isAsideOpen()) {
@@ -178,282 +196,336 @@ const App: Component = () => {
     (document.getElementById("formName") as HTMLElement).focus();
   }
 
+  // {/* <div class={`h-screen @container ${styles.app} ${styles.open}`}> */}
+  // {/* <main class={`${styles.main} ${isAsideOpen() ? styles.open + " @md:max-w-4xl" : "@md:max-w-4xl" } container flex h-full flex-col justify-between space-y-0 px-8 3xl:w-full bg-muted`} > */}
+  // {/* <div class={styles.list_window}> */}
   return (
-    <div class={`h-screen @container ${styles.app} ${styles.open}`}>
-      <header class={`${styles.header} border! z-10 mb-1! px-8 py-4`}>
-        <div class="flex w-full items-center justify-between">
-          <div class="flex place-content-center items-center justify-center gap-4">
-            <button
-              type="button"
-              onClick={handleOpenAsideMenu}
-              title="Main Menu"
-              class="z-10 grid place-self-center border border-transparent"
-            >
-              <HamburgerIcon />
-            </button>
-            <div class="relative flex items-center gap-[6px] leading-none">
-              <div class="logo text-xl capitalize leading-none text-foreground/70 ">
-                wallet
-              </div>
-              <span class="rounded-sm px-1 py-0.5 text-[11px] font-semibold text-blue-500 opacity-95 outline outline-[2.3px] outline-blue-500/70">
-                Beta
-              </span>
-            </div>
-          </div>
-
-          <div class="nav-end grid grid-flow-col items-center gap-4">
-            <button class="text-muted-foreground">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width={24 + 12}
-                height={24 + 12}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-user-circle-2"
-                data-darkreader-inline-stroke=""
-                style="--darkreader-inline-stroke:currentColor;"
-              >
-                <path d="M18 20a6 6 0 0 0-12 0"></path>
-                <circle cx="12" cy="10" r="4"></circle>
-                <circle cx="12" cy="12" r="10"></circle>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* <Show when={isAsideOpen()}> */}
+    <div class="flex h-screen max-h-screen flex-col overflow-y-clip ">
+      <Header handleOpenAsideMenu={handleOpenAsideMenu} />
       <div class="relative">
-        <aside
-          class={`${styles.aside} transition-transform ${isAsideOpen() ? styles.open + "" : ""
-            }`}
-        >
-          {/* Sidebar Overlay */}
-          <div
-            ref={asideOverlayRef}
-            aria-label="aside-backdrop"
-            class={`${isAsideOpen()
-              ? styles.open + "delay-0 blur-none duration-150 ease-linear opacity-70  transition-all"
-              : "-translate-x-full delay-0 blur-2xl transition-all opacity-0 duration-100  "
-              } absolute inset-0 -z-10 h-screen w-screen bg-muted/70 bg-blend-overlay ease md:hidden`}
-          />
-
-          {/* Sidebar Content */}
-          <div
-            ref={asideRef}
-            class="z-10 flex h-full flex-col justify-between bg-background pb-20"
-          >
-            <div class="mt-2 grid text-lg [&>*]:tracking-wide [&>button]:rounded-e-full">
-              <button class={styles.button}>
-                <ActivityIcon />
-                <div class="settings">Activity</div>
-              </button>
-              <button class={styles.button}>
-                <SettingsIcon />
-                <div class="settings">Settings</div>
-              </button>
-            </div>
-
-            <div class="border border-transparent border-t-muted-foreground/50 ">
-              <button class={`${styles.button} my-2 rounded-e-full  text-lg `}>
-                <ThemeToggle />
-              </button>
-            </div>
-          </div>
-        </aside>
-
-        {/* 
-      </Show>
-      */}
-
-        {/* PERF: Use margin inline start to position main content wrt aside, for smooth transitions */}
-        <main
-          class={`${styles.main} ${isAsideOpen() ? styles.open + " @md:max-w-4xl" : "@md:max-w-[62rem]"
-            } container flex h-full flex-col justify-between space-y-0 px-8 3xl:w-full bg-muted`}
-        >
-          <div class={styles.list_window}>
-            <Show when={formStore}>
-              <pre class="debug hidden">
-                {JSON.stringify(formStore, null, 2)}
-              </pre>
-            </Show>
-
-            <Show
-              when={groupedState()}
-              fallback={
-                <For each={Array.from({ length: 4 })}>
-                  {(_) => (
-                    <section
-                      class="justify-center! mx-auto flex items-center space-x-4 rounded-xl bg-card transition-all"
-                      style={{ "padding-block": "2rem" }}
-                    >
-                      <Skeleton class={"h-12 w-12 rounded-full"} />
-                      <div class="space-y-2">
-                        <Skeleton class={"h-4 w-[250px]"} />
-                        <Skeleton class={"h-4 w-[200px]"} />
-                      </div>
-                    </section>
-                  )}
-                </For>
-              }
-            >
-              <For
-                each={
-                  groupedState() as unknown[] as [string, TDatabaseExpense[]]
-                }
-              >
-                {(items) => (
-                  <section class="border! p-4! space-y-1 rounded-xl bg-card">
-                    <h2 class="text-sm! tracking-tighter text-muted-foreground">
-                      {items[0] as string}
-                    </h2>
-                    <div class="group_items">
-                      <Show when={items[1] as unknown as TDatabaseExpense[]}>
-                        <For each={items[1] as unknown as TDatabaseExpense[]}>
-                          {(item) => (
-                            <ListItem
-                              item={item}
-                              setIsItemModalOpen={setIsItemModalOpen}
-                            />
-                          )}
-                        </For>
-                      </Show>
-                    </div>
-                  </section>
-                )}
-              </For>
-            </Show>
-
-            {/*
-            <input type="number" min="1" placeholder="Enter Numeric Id" onInput={(e) => setUserId(e.currentTarget.value)} />
-            <span>{user.loading && "Loading..."}</span>
-            <div> <pre>{JSON.stringify(user(), null, 2)}</pre> </div>
-          */}
-          </div>
-
-          <div
-          // class="top-full! px-12! sticky bottom-0 left-0 right-0 m-0 mx-0 w-full flex-shrink-0 place-self-end bg-background px-4 py-4 pb-8"
-          >
-            <Show
-              when={isFormOpen()}
-              fallback={
-                <div class="mx-auto flex h-fit w-full bg-muted  pt-4 gap-4">
-                  <input
-                    type="text"
-                    onClick={(ev) => handleShowForm(ev)}
-                    placeholder="Add new expense&#x2026;"
-                    class="w-full rounded-[50px] border bg-background px-4 py-4"
-                  />
-                  <button type="submit">
-                    <PlusIcon />
-                  </button>
-                </div>
-              }
-            >
-              <form
-                onSubmit={(ev) => handleSubmitForm(ev)}
-                class="mx-auto bg-muted flex h-fit w-full gap-4"
-              >
-                <div class="max-w-3xl! w-full gap-2 rounded-[50px] border bg-background px-4 py-2 [&>*>*]:border-transparent [&>*>*]:border-b-muted">
-                  <div class={styles.formControl}>
-                    <label for="formName">Name</label>
-                    <input
-                      id="formName"
-                      type="text"
-                      autofocus={true}
-                      placeholder="Expense"
-                      value={formStore.name}
-                      onInput={updateFormField("name")} // use onChange for less control on reactivity or more performance.
-                      required // use:validate={[userNameExists]} value={newTitle()} onInput={(e) => setTitle(e.currentTarget.value)}
-                    />
-                    {/*
-                {errors.email && <ErrorMessage error={errors.email} />}
-                */}
-                  </div>
-                  <div class={styles.formControl}>
-                    <label for="formAmount">Amount</label>
-                    <input
-                      // value={formStore.amount}
-                      onInput={updateFormField("amount")}
-                      id="formAmount"
-                      type="number"
-                      placeholder="Amount"
-                      class="form-input"
-                      required
-                    />
-                  </div>
-                  {/*
-                {errors.confirmPassword && <ErrorMessage error={errors.confirmPassword} />}
-                */}
-                  <div class={styles.formControl}>
-                    <label for="formAmount">Transaction Date</label>
-
-                    <input
-                      value={
-                        formStore.transaction_date ??
-                        asHTMLInputDateValue(new Date())
-                      }
-                      onChange={updateFormField("transaction_date")}
-                      type="date"
-                      placeholder="Amount"
-                      class="w-fit"
-                    />
-                  </div>
-                  <div class={styles.formControl}>
-                    <label for="formAmount">Description</label>
-                    <textarea
-                      value={formStore.description ?? ""}
-                      onInput={updateFormField("description")}
-                      placeholder="Description"
-                      class="form-textarea h-12"
-                    />
-                  </div>
-                  <div class={styles.formControl}>
-                    <label for="isCashCheckbox">Cash</label>
-                    <input
-                      checked={formStore.is_cash}
-                      onChange={updateFormField("is_cash")}
-                      type="checkbox"
-                      id="isCashCheckbox"
-                    // class="form-checkbox dark:invert dark:bg-background rounded"
-                    />
-                  </div>
-                </div>
-                <div class="grid">
-                  <button title="Submit form" class="" type="submit">
-                    <PlusIcon />
-                  </button>
-                  <button
-                    class=""
-                    type="button"
-                    onClick={(ev) => {
-                      ev.preventDefault();
-                      setIsFormOpen(false);
-                      for (const key of Object.keys(formStore)) {
-                        clearField(key);
-                      } // [ "amount", "created_at", "description", "is_cash", "name", "transaction_date", "updated_at" ]
-                    }}
-                  >
-                    <div title="Reset form" class="">
-                      <CrossIcon />
-                    </div>
-                  </button>
-                </div>
-              </form>
-            </Show>
-          </div>
-        </main>
+        <Aside
+          isAsideOpen={isAsideOpen()}
+          asideOverlayRef={asideOverlayRef}
+          asideRef={asideRef}
+        />
       </div>
+
+      {/* TODO: Style scroll bar from App.module.css */}
+      <main
+        class={`${styles.workWindow} ${
+          isAsideOpen() ? "md:ms-[233px]" : ""
+        } flex-1 flex-grow overflow-y-auto bg-muted px-8 pt-8 md:mx-24 md:mt-8 md:rounded-t-3xl`}
+      >
+        <Workspace
+          groupedState={groupedState()}
+          setIsItemModalOpen={setIsItemModalOpen}
+        />
+      </main>
+
+      <footer
+        class={`${
+          isAsideOpen() ? "md:ms-[233px]" : ""
+        } bg-muted px-8 pb-2 md:mx-24 md:mb-8 md:rounded-b-3xl`}
+      >
+        {/* TODO: Call the setter state function before passing them as props. */}
+        <CreateNewExpense
+          isFormOpen={isFormOpen}
+          handleShowForm={handleShowForm}
+          handleSubmitForm={handleSubmitForm}
+          formStore={formStore}
+          updateFormField={updateFormField}
+          setIsFormOpen={setIsFormOpen}
+          clearField={clearField}
+        />
+      </footer>
     </div>
   );
 };
 
 export default App;
 
+type AsideProps = {
+  // isAsideOpen: Accessor<boolean>;
+  isAsideOpen: boolean;
+  asideOverlayRef: HTMLDivElement | undefined;
+  asideRef: HTMLDivElement | undefined;
+};
+
+type CreateNewExpenseProps = {
+  isFormOpen: Accessor<boolean>;
+  handleShowForm: (
+    ev: MouseEvent & { currentTarget: HTMLInputElement; target: Element }
+  ) => void;
+  handleSubmitForm: (
+    ev: Event & { submitter: HTMLElement } & {
+      currentTarget: HTMLFormElement;
+      target: Element;
+    }
+  ) => Promise<void>;
+  formStore: Partial<TDatabaseExpense>;
+  updateFormField: (fieldName: string) => (ev: Event) => void;
+  setIsFormOpen: Setter<boolean>;
+  clearField: (fieldName: string) => void;
+};
+
+type WorkspaceProps = {
+  groupedState: TGroupedExpense[] | null;
+  setIsItemModalOpen: Setter<boolean>;
+};
+function Workspace(props: WorkspaceProps) {
+  return (
+    <Show
+      when={props.groupedState}
+      fallback={
+        <For each={Array.from({ length: 4 })}>{(_) => <SkeletonSection />}</For>
+      }
+    >
+      <For
+        each={props.groupedState as unknown[] as [string, TDatabaseExpense[]]}
+      >
+        {(items) => (
+          <section class="border! p-4! mx-1 mb-4 h-fit space-y-1 rounded-3xl bg-card p-6">
+            <h2 class="tracking-tighter text-muted-foreground">
+              {items[0].toString()}
+            </h2>
+            <div class="group_items">
+              <Show when={items[1] as unknown as TDatabaseExpense[]}>
+                <For each={items[1] as unknown as TDatabaseExpense[]}>
+                  {(item: TDatabaseExpense) => (
+                    <ListItem
+                      item={item}
+                      setIsItemModalOpen={props.setIsItemModalOpen}
+                    />
+                  )}
+                </For>
+              </Show>
+            </div>
+          </section>
+        )}
+      </For>
+    </Show>
+  );
+}
+
+function CreateNewExpense(props: CreateNewExpenseProps) {
+  return (
+    <div
+      class="" // class="top-full! px-12! sticky bottom-0 left-0 right-0 m-0 mx-0 w-full flex-shrink-0 place-self-end bg-background px-4 py-4 pb-8"
+    >
+      <Show
+        when={props.isFormOpen()}
+        fallback={
+          <div class="mx-auto flex h-fit w-full gap-4 bg-muted py-4">
+            <input
+              type="text"
+              onClick={(ev) => props.handleShowForm(ev)}
+              placeholder="Add new expense&#x2026;"
+              class="w-full rounded-[50px] border bg-background px-4 py-4"
+            />
+            <button type="submit">
+              <PlusIcon />
+            </button>
+          </div>
+        }
+      >
+        <form
+          onSubmit={(ev) => props.handleSubmitForm(ev)}
+          class="mx-auto flex h-fit w-full gap-4 bg-muted"
+        >
+          <div class="max-w-3xl! w-full gap-2 rounded-[50px] border bg-background px-4 py-2 [&>*>*]:border-transparent [&>*>*]:border-b-muted">
+            <div class={styles.formControl}>
+              <label for="formName">Name</label>
+              <input
+                id="formName"
+                type="text"
+                autofocus={true}
+                placeholder="Expense"
+                value={props.formStore.name}
+                onInput={props.updateFormField("name")} // use onChange for less control on reactivity or more performance.
+                required // use:validate={[userNameExists]} value={newTitle()} onInput={(e) => setTitle(e.currentTarget.value)}
+              />
+              {/*
+        {errors.email && <ErrorMessage error={errors.email} />}
+        */}
+            </div>
+            <div class={styles.formControl}>
+              <label for="formAmount">Amount</label>
+              <input
+                // value={formStore.amount}
+                onInput={props.updateFormField("amount")}
+                id="formAmount"
+                type="number"
+                placeholder="Amount"
+                class="form-input"
+                required
+              />
+            </div>
+            {/*
+          {errors.confirmPassword && <ErrorMessage error={errors.confirmPassword} />}
+          */}
+            <div class={styles.formControl}>
+              <label for="formAmount">Transaction Date</label>
+
+              <input
+                value={
+                  props.formStore.transaction_date ??
+                  asHTMLInputDateValue(new Date())
+                }
+                onChange={props.updateFormField("transaction_date")}
+                type="date"
+                placeholder="Amount"
+                class="w-fit"
+              />
+            </div>
+            <div class={styles.formControl}>
+              <label for="formAmount">Description</label>
+              <textarea
+                value={props.formStore.description ?? ""}
+                onInput={props.updateFormField("description")}
+                placeholder="Description"
+                class="form-textarea h-12"
+              />
+            </div>
+            <div class={styles.formControl}>
+              <label for="isCashCheckbox">Cash</label>
+              <input
+                checked={props.formStore.is_cash}
+                onChange={props.updateFormField("is_cash")}
+                type="checkbox"
+                id="isCashCheckbox"
+              />
+            </div>
+          </div>
+          <div class="grid">
+            <button title="Submit form" class="" type="submit">
+              <PlusIcon />
+            </button>
+            <button
+              class=""
+              type="button"
+              onClick={(ev) => {
+                ev.preventDefault();
+                props.setIsFormOpen(false);
+                for (const key of Object.keys(props.formStore)) {
+                  props.clearField(key);
+                } // [ "amount", "created_at", "description", "is_cash", "name", "transaction_date", "updated_at" ]
+              }}
+            >
+              <div title="Reset form" class="">
+                <CrossIcon />
+              </div>
+            </button>
+          </div>
+        </form>
+      </Show>
+    </div>
+  );
+}
+
+function Aside(props: AsideProps): JSX.Element {
+  return (
+    <aside
+      class={`${styles.aside} transition-transform ${
+        props.isAsideOpen ? styles.open + "" : ""
+      }`}
+    >
+      {/* Sidebar Overlay */}
+      <div
+        ref={props.asideOverlayRef}
+        aria-label="aside-backdrop"
+        class={`${
+          props.isAsideOpen
+            ? styles.open +
+              "opacity-70 blur-none transition-all duration-150 delay-0  ease-linear"
+            : "-translate-x-full opacity-0 blur-2xl transition-all duration-100 delay-0  "
+        } ease absolute inset-0 -z-10 h-screen w-screen bg-muted/70 bg-blend-overlay md:hidden`}
+      />
+
+      {/* Sidebar Content */}
+      <div
+        ref={props.asideRef}
+        class="z-10 flex h-full flex-col justify-between bg-background pb-20"
+      >
+        <div class="mt-2 grid text-lg [&>*]:tracking-wide [&>button]:rounded-e-full">
+          <button class={styles.button}>
+            <ActivityIcon />
+            <div class="settings">Activity</div>
+          </button>
+          <button class={styles.button}>
+            <SettingsIcon />
+            <div class="settings">Settings</div>
+          </button>
+        </div>
+
+        <div class="border border-transparent border-t-muted-foreground/50 ">
+          <button class={`${styles.button} my-2 rounded-e-full  text-lg `}>
+            <ThemeToggle />
+          </button>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+type HeaderProps = {
+  handleOpenAsideMenu: (
+    ev: MouseEvent & {
+      currentTarget: HTMLButtonElement;
+      target: Element;
+    }
+  ) => boolean;
+};
+function Header(props: HeaderProps): JSX.Element {
+  return (
+    <header
+      class={`${styles.header} border! mb-1! sticky! top-0 z-10 px-8 py-4`}
+    >
+      <div class="flex w-full items-center justify-between">
+        <div class="flex place-content-center items-center justify-center gap-4">
+          <button
+            type="button"
+            onClick={(ev) => props.handleOpenAsideMenu(ev)}
+            title="Main Menu"
+            class="z-10 grid place-self-center border border-transparent"
+          >
+            <HamburgerIcon />
+          </button>
+          <div class="relative flex items-center gap-[6px] leading-none">
+            <div class="logo text-xl capitalize leading-none text-foreground/70 ">
+              wallet
+            </div>
+            <span class="rounded-sm px-1 py-0.5 text-[11px] font-semibold text-blue-500 opacity-95 outline outline-[2.3px] outline-blue-500/70">
+              Beta
+            </span>
+          </div>
+        </div>
+
+        <div class="nav-end grid grid-flow-col items-center gap-4">
+          <button class="text-muted-foreground">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width={24 + 12}
+              height={24 + 12}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-user-circle-2"
+              data-darkreader-inline-stroke=""
+              style="--darkreader-inline-stroke:currentColor;"
+            >
+              <path d="M18 20a6 6 0 0 0-12 0"></path>
+              <circle cx="12" cy="10" r="4"></circle>
+              <circle cx="12" cy="12" r="10"></circle>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}
 // function Card(): JSX.Element {
 //   return (
 //     <div class="w-full min-h-[40%] items-center gap-2 m-6 bg-slate-100 rounded-xl p-6 @xl:flex">

@@ -30,11 +30,12 @@ export async function insertRowsDB<T extends object>(rows: T[]) {
 
 type TDeleteRow = {
   id: string;
-}
+};
 export async function deleteRowsDB(props: TDeleteRow) {
   const { data, error } = await supabase
     .from("expenses")
-    .delete().eq("id", props.id)
+    .delete()
+    .eq("id", props.id)
     // .eq("some_column", "someValue")
     .select();
   console.log(data, error);

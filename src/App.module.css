@@ -1,20 +1,30 @@
 .App {
   text-align: center;
 }
-
 .app {
   display: flex;
   flex-direction: column;
   max-height: 100vh;
-  padding-block-end: 16px;
-  @apply pb-6;
-  /* justify-content: space-between; */
 }
-
+.workWindow {
+  &::-webkit-scrollbar {
+    width: 6px;
+    @apply rounded-full;
+  }
+  &::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/10;
+    @apply rounded-full;
+    @apply my-4 py-4;
+  }
+  &::-webkit-scrollbar-track {
+    /* Same as background. Keeping it subtle */
+    @apply bg-transparent;
+    @apply rounded-sm;
+  }
+}
 header.header {
   grid-area: header;
 }
-
 aside.aside {
   /* Default styles */
   grid-area: aside;
@@ -26,17 +36,6 @@ aside.aside {
   @apply bg-background;
   @apply bottom-0 left-0 top-0 h-screen;
 }
-
-/* Use margin inline start to position main content wrt aside, for smooth transitions  */
-main.main {
-  grid-area: main;
-  margin-inline: 16px;
-  border-radius: 24px;
-  @apply container mx-auto border;
-  @apply  pb-6 ;
-  @apply  mb-6 ;
-}
-
 .app.open {
   display: grid;
   grid-template-areas:
@@ -45,38 +44,43 @@ main.main {
   grid-template-columns: 1fr;
   grid-template-rows: auto 1fr;
 }
-
-  /* NOTE: Animating with opacity, and transform is faster and smoother. */
-main.main.open {
-  /* transform: translateX(222px); */
-    margin-inline-start: 222px;
-}
-
 aside.aside.open {
   transform: translateX(0); /* Slide in when open */
 }
-
 @media (max-width: 640px) {
   .app.open {
     display: flex;
     flex-direction: column;
   }
-
-  main.main {
-    /* border-radius: 0; */
-  }
-
-  main.main.open {
-    margin-inline-start: 0;
-    /* transform: translateX(0); */
-  }
-  /* TODO: With js/ts, toggle out open for mobile screen by default */
 }
 
+/* REGION_START: ARCHIVE */
+
+/* Use margin inline start to position main content wrt aside, for smooth transitions  */
+main.main {
+  grid-area: main;
+  margin-inline: 16px;
+  border-radius: 24px;
+  @apply container mx-auto border;
+  @apply pb-6;
+  @apply mb-6;
+}
+
+/* NOTE: Animating with opacity, and transform is faster and smoother. */
+main.main.open {
+  /* transform: translateX(222px); */
+  margin-inline-start: 222px;
+}
+
+@media (max-width: 640px) {
+  main.main.open {
+    margin-inline-start: 0;
+  }
+}
 
 .list_window {
   /* @apply rounded-t-[28px]; */
-  @apply  max-h-[72vh] md:max-h-[68vh] h-full flex-shrink;
+  @apply h-full max-h-[72vh] flex-shrink md:max-h-[68vh];
   /* @apply absolute bottom-0 top-0 h-screen;  */
   @apply overflow-y-auto;
   /* @apply mt-6; */
@@ -106,6 +110,8 @@ aside.aside.open {
     @apply rounded-sm;
   }
 }
+
+/* REGION_END: ARCHIVE */
 
 button.button,
 div.button {
@@ -173,8 +179,6 @@ form .formControl {
     }
   }
 }
-
-
 
 .workspace {
   overflow-y: auto;
