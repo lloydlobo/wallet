@@ -1,8 +1,8 @@
-import { cn } from '@/lib/cn'
+import { cn } from '@/lib/cn';
 
 type Props = {
-  class?: string
-}
+  class?: string;
+};
 
 function Skeleton(props: Props) {
   return (
@@ -10,7 +10,7 @@ function Skeleton(props: Props) {
       class={cn('animate-pulse rounded-md bg-muted', props.class)}
       // {...props}
     />
-  )
+  );
 }
 
-export { Skeleton }
+export { Skeleton };

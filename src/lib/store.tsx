@@ -1,5 +1,5 @@
-import { createEffect } from 'solid-js'
-import { createStore, SetStoreFunction, Store } from 'solid-js/store'
+import { createEffect } from 'solid-js';
+import { createStore, SetStoreFunction, Store } from 'solid-js/store';
 
 /*
  * 
@@ -28,20 +28,20 @@ export function createLocalStoreTodos<T extends object>(
   name: string,
   init: T
 ): [Store<T>, SetStoreFunction<T>] {
-  const localState = localStorage.getItem(name)
-  const [state, setState] = createStore<T>(localState ? JSON.parse(localState) : init)
+  const localState = localStorage.getItem(name);
+  const [state, setState] = createStore<T>(localState ? JSON.parse(localState) : init);
 
-  createEffect(() => localStorage.setItem(name, JSON.stringify(state)))
+  createEffect(() => localStorage.setItem(name, JSON.stringify(state)));
 
-  return [state, setState]
+  return [state, setState];
 }
 
 export function removeIndex<T>(array: readonly T[], index: number): T[] {
-  return [...array.slice(0, index), ...array.slice(index + 1)]
+  return [...array.slice(0, index), ...array.slice(index + 1)];
 }
 
 // Make all properties in T optional
-export type LocalStoreExpenses<T> = Partial<T>
+export type LocalStoreExpenses<T> = Partial<T>;
 
 //   This type is tricky to use so should be avoided if possibleUse `Record<string, unknown>`
 // instead deno-lint (ban-types) [5, 49]
@@ -51,9 +51,9 @@ export function createLocalStore<T extends object>(
   key: string,
   init: T
 ): [Store<T>, SetStoreFunction<T>] {
-  const localState: string | null = localStorage.getItem(key)
-  const [state, setState] = createStore<T>(localState ? JSON.parse(localState) : init)
-  createEffect(() => localStorage.setItem(key, JSON.stringify(state)))
+  const localState: string | null = localStorage.getItem(key);
+  const [state, setState] = createStore<T>(localState ? JSON.parse(localState) : init);
+  createEffect(() => localStorage.setItem(key, JSON.stringify(state)));
 
-  return [state, setState]
+  return [state, setState];
 }

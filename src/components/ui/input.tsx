@@ -1,11 +1,11 @@
-import { cn } from '@/lib/cn'
-import { JSX } from 'solid-js/jsx-runtime'
+import { cn } from '@/lib/cn';
+import { JSX } from 'solid-js/jsx-runtime';
 
 export interface InputProps extends JSX.InputHTMLAttributes<HTMLInputElement> {
   // Add your additional props here
-  ref?: HTMLInputElement | undefined
+  ref?: HTMLInputElement | undefined;
   /** Custom class to append to the base `class` styling. */
-  className?: string
+  className?: string;
   // type?: string
 }
 
@@ -22,9 +22,9 @@ const Input = (props: InputProps) => {
       {...props}
       // ref={props.ref}
     />
-  )
-}
+  );
+};
 
-Input.displayName = 'Input'
+Input.displayName = 'Input';
 
-export { Input }
+export { Input };

@@ -1,11 +1,12 @@
 // @aource https://codesandbox.io/s/solidjs-submit-form-with-store-6kh4c?from-embed=&file=%2Fsrc%2FuseForm.ts
 
-import { createStore } from 'solid-js/store'
-import { insertRowsDB } from '../db/controllers'
-import { TDatabaseExpense, TUpdateExpense } from '../types-supabase'
+import { createStore } from 'solid-js/store';
+import { z } from 'zod';
+import { insertRowsDB } from '../db/controllers';
+import { TDatabaseExpense, TUpdateExpense } from '../types-supabase';
 
 export function useForm() {
-  const now = new Date().toISOString()
+  const now = new Date().toISOString();
   const [formStore, setFormStore] = createStore<TUpdateExpense>({
     amount: 0,
     created_at: now,
@@ -14,62 +15,52 @@ export function useForm() {
     name: '', // owner: "",
     transaction_date: null,
     updated_at: now,
-  })
+  });
 
   // Reusable function to update the store based on the name of the property field.
   const updateFormField = (fieldName: string) => (ev: Event) => {
-    const inputElement = ev?.currentTarget as HTMLInputElement
+    const field = z.string().parse(fieldName);
+    const inputElement = ev?.currentTarget as HTMLInputElement;
+
     if (inputElement.type === 'checkbox') {
       setFormStore({
-        [fieldName]: !!inputElement.checked,
-      })
+        [field]: !!inputElement.checked,
+      });
     } else {
       setFormStore({
-        [fieldName]: inputElement.value,
-      })
+        [field]: inputElement.value,
+      });
     }
-  }
+  };
 
+  // FIXME: Would it automatically parse non-string values, like boolean of is_cash?
   const clearField = (fieldName: string) => {
-    // FIXME: Would it automatically parse non-string values, like boolean of is_cash?
     setFormStore({
       [fieldName]: '',
-    })
-  }
+    });
+  };
 
-  // TODO: Comparedto react-hook-forms, just use this to return formStore value.
-  // PERF: We can move submit in useForm's scope, to access formStore value?
+  // PERF: Comparedto react-hook-forms, just use this to return formStore value.
+  // NOTE: Submit to back-end server or database.
   const submit = async (onSubmit: (data: TUpdateExpense) => Promise<void>) => {
-    // Filter out unnecessary data.
-    const dataToSubmit: Partial<TDatabaseExpense> = {
-      amount: formStore.amount,
-      created_at: formStore.created_at,
-      description: formStore.description,
-      is_cash: formStore.is_cash,
-      name: formStore.name,
-      transaction_date: formStore.transaction_date,
-      updated_at: formStore.updated_at,
-    } // owner: "", id: (expenses()?.length ?? -1) + 1,
-    // console.log(`submitting ${JSON.stringify(dataToSubmit)}`)
+    const VITE_SUPABASE_OWNER = import.meta.env.VITE_SUPABASE_OWNER;
 
-    // NOTE: Submit to back-end server or database.
-    const VITE_SUPABASE_OWNER = import.meta.env.VITE_SUPABASE_OWNER
+    const now = new Date();
 
-    const now = new Date()
+    // Filter out unnecessary data here. Remove or add fields.
     const dataWithOwnerToSubmit: TUpdateExpense = {
       name: formStore.name,
       description: formStore.description,
       amount: formStore.amount,
       is_cash: formStore.is_cash,
       owner: VITE_SUPABASE_OWNER,
-      created_at: now.toISOString(),
+      created_at: formStore.created_at,
       updated_at: now.toISOString(),
-      transaction_date: formStore.transaction_date ?? now.toISOString(),
-    }
+      transaction_date: formStore.transaction_date,
+    };
 
-    // await insertRowsDB([dataWithOwnerToSubmit]);
-    await onSubmit(dataWithOwnerToSubmit)
-  }
+    await onSubmit(dataWithOwnerToSubmit);
+  };
 
-  return { formStore, setFormStore, submit, updateFormField, clearField }
+  return { formStore, setFormStore, submit, updateFormField, clearField };
 }

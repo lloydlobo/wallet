@@ -8,7 +8,7 @@ module.exports = {
   tailwindFunctions: ['cn', 'clsx'],
 
   // @source https://github.com/tailwindlabs/tailwindcss.com/blob/master/prettier.config.js
-  semi: false,
+  semi: true,
   singleQuote: true,
   printWidth: 100,
   trailingComma: 'es5',

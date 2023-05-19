@@ -13,8 +13,8 @@
  * O(n log n) to O(kn), which is a significant improvement if the number of items is large.
  */
 
-import { Ordering } from '@/lib/enums'
-import { TDatabaseExpense } from '@/lib/types-supabase'
+import { Ordering } from '@/lib/enums';
+import { TDatabaseExpense } from '@/lib/types-supabase';
 
 /**
  * Sorts the items based on their timestamps using the radix sort algorithm.
@@ -30,8 +30,8 @@ export function radixSort(items: TDatabaseExpense[], cmp: Ordering): TDatabaseEx
     ...items.map((item) =>
       new Date(item.transaction_date ?? item.created_at ?? item.updated_at).getTime()
     )
-  )
-  let divisor = 1
+  );
+  let divisor = 1;
 
   /**
    * Performs radix sort by iterating through the digits of the largest timestamp.
@@ -41,18 +41,18 @@ export function radixSort(items: TDatabaseExpense[], cmp: Ordering): TDatabaseEx
       array: items as TDatabaseExpense[],
       divisor,
       cmp,
-    })
-    divisor *= 10
+    });
+    divisor *= 10;
   }
 
-  return items
+  return items;
 }
 
 type CountingSort = {
-  array: TDatabaseExpense[]
-  divisor: number
-  cmp: Ordering
-}
+  array: TDatabaseExpense[];
+  divisor: number;
+  cmp: Ordering;
+};
 
 /**
  * Sorts the items based on the current digit using the counting sort algorithm.
@@ -60,8 +60,8 @@ type CountingSort = {
  * @returns The sorted array of items based on the current digit.
  */
 function countingSort(props: CountingSort): TDatabaseExpense[] {
-  const counts = Array.from({ length: 10 }, () => [] as TDatabaseExpense[])
-  const output: TDatabaseExpense[] = []
+  const counts = Array.from({ length: 10 }, () => [] as TDatabaseExpense[]);
+  const output: TDatabaseExpense[] = [];
 
   /**
    * Counts the number of items with the current digit and puts them in the corresponding count array.
@@ -71,9 +71,9 @@ function countingSort(props: CountingSort): TDatabaseExpense[] {
       (new Date(item.transaction_date ?? item.created_at ?? item.updated_at).getTime() /
         props.divisor) %
         10
-    )
+    );
 
-    counts[digit].push(item)
+    counts[digit].push(item);
   }
 
   /**
@@ -81,15 +81,15 @@ function countingSort(props: CountingSort): TDatabaseExpense[] {
    */
   if (props.cmp === Ordering.Less) {
     for (const count of counts) {
-      output.push(...count)
+      output.push(...count);
     }
   } else if (props.cmp === Ordering.Greater) {
     for (let i = counts.length - 1; i >= 0; i--) {
-      output.push(...counts[i])
+      output.push(...counts[i]);
     }
   }
 
-  return output
+  return output;
 }
 
 /*

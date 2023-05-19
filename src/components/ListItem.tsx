@@ -1,84 +1,97 @@
-import { CrossIcon } from '@/components/icons'
-import { Input } from '@/components/ui/input'
-import { stylesInput, Textarea } from '@/components/ui/textarea'
-import { cn } from '@/lib/cn'
-import { asDayOfWeek, asHTMLInputDateValue } from '@/lib/date'
-import { deleteRowsDB, insertRowsDB, updateRowsDB } from '@/lib/db/controllers'
-import { useForm } from '@/lib/hooks/use-form'
-import { TDatabaseExpense, TRowExpense, TUpdateExpense } from '@/lib/types-supabase'
-import { createEffect, createSignal, onCleanup, Setter } from 'solid-js' // mergeProps, // const merged = mergeProps({ ownerName: "John", month: 4 }, props);
-import { JSX } from 'solid-js/jsx-runtime'
-import { z } from 'zod'
+import { CrossIcon } from '@/components/icons';
+import { Input } from '@/components/ui/input';
+import { stylesInput, Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/cn';
+import { asDayOfWeek, asHTMLInputDateValue } from '@/lib/date';
+import { deleteRowsDB, insertRowsDB, updateRowsDB } from '@/lib/db/controllers';
+import { useForm } from '@/lib/hooks/use-form';
+import { TDatabaseExpense, TRowExpense, TUpdateExpense } from '@/lib/types-supabase';
+import { createEffect, createSignal, onCleanup, Setter } from 'solid-js'; // mergeProps, // const merged = mergeProps({ ownerName: "John", month: 4 }, props);
+import { JSX } from 'solid-js/jsx-runtime';
+import { z } from 'zod';
 
 type ListItemProps = {
-  item: TRowExpense
-  setIsItemModalOpen: Setter<boolean>
-}
+  item: TRowExpense;
+  setIsItemModalOpen: Setter<boolean>;
+};
 
 // const closeDialog = ( ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }) => { props.setIsItemModalOpen(false); return setIsDialogOpen(false); };
 export function ListItem(props: ListItemProps): JSX.Element {
-  const { formStore, setFormStore, updateFormField, submit: handleSubmit, clearField } = useForm()
+  const { formStore, setFormStore, updateFormField, submit: handleSubmit, clearField } = useForm();
 
-  const [isDialogOpen, setIsDialogOpen] = createSignal(false)
-  const [showModal, setShowModal] = createSignal(false)
+  const [isDialogOpen, setIsDialogOpen] = createSignal(false);
+  const [showModal, setShowModal] = createSignal(false);
 
-  const dateTransaction = new Date(getAnyDate())
+  const dateTransaction = new Date(getAnyDate());
 
-  let formInputNameRef: HTMLInputElement | undefined
-  let formTextareaRef: HTMLTextAreaElement | undefined
-  let itemDialogRef: HTMLDialogElement | undefined
-  let itemDialogOutputRef: HTMLOutputElement | undefined
-  let confirmItemDialogBtnRef: HTMLButtonElement | undefined
-  let openItemDialogBtnRef
-  let closeItemDialogBtnRef
+  let formInputNameRef: HTMLInputElement | undefined;
+  let formTextareaRef: HTMLTextAreaElement | undefined;
+  let itemDialogRef: HTMLDialogElement | undefined;
+  let itemDialogOutputRef: HTMLOutputElement | undefined;
+  let confirmItemDialogBtnRef: HTMLButtonElement | undefined;
+  let openItemDialogBtnRef;
+  let closeItemDialogBtnRef;
 
   createEffect(() => {
-    itemDialogRef?.addEventListener('close', onCloseDialogEvent)
+    itemDialogRef?.addEventListener('close', onCloseDialogEvent);
     onCleanup(() => {
-      itemDialogRef?.removeEventListener('close', onCloseDialogEvent)
-    })
-  })
+      itemDialogRef?.removeEventListener('close', onCloseDialogEvent);
+    });
+  });
+
+  function clearAllFields() {
+    for (const key of Object.keys(formStore)) {
+      clearField(key);
+    }
+  }
 
   function getAnyDate(): string {
-    return props.item.transaction_date ?? props.item.created_at ?? props.item.updated_at
+    return props.item.transaction_date ?? props.item.created_at ?? props.item.updated_at;
+  }
+
+  function onDeleteForm(ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }) {
+    ev.preventDefault();
+    onDelete(ev);
+    itemDialogRef?.close();
+    setIsDialogOpen(false);
+    setShowModal(false);
+    clearAllFields();
   }
 
   function onDelete(ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }) {
-    ev.preventDefault()
-    deleteRowsDB({ id: z.coerce.string().parse(props.item.id) })
-    setIsDialogOpen(false)
-    return setShowModal(false)
+    ev.preventDefault();
+    deleteRowsDB({ id: z.coerce.string().parse(props.item.id) });
+    setIsDialogOpen(false);
+    return setShowModal(false);
   }
 
   function onCloseDialogEvent(this: HTMLDialogElement, _ev: Event) {
-    if (!itemDialogOutputRef) return
+    if (!itemDialogOutputRef) return;
     itemDialogOutputRef.value =
       itemDialogRef?.returnValue === 'default'
         ? 'No return value'
-        : `ReturnValue:${itemDialogRef?.returnValue}.`
-    props.setIsItemModalOpen(false)
+        : `ReturnValue:${itemDialogRef?.returnValue}.`;
+    props.setIsItemModalOpen(false);
+    clearAllFields();
   }
 
-  // `show()` <- Displays the dialog element. vs `showModal()` Displays the dialog as modal
-  // -> itemDialogRef?.showModal();
+  // `show()` <- Displays the dialog element. vs
+  // `showModal()` Displays the dialog as modal -> itemDialogRef?.showModal();
   const openDialog = (_ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }) => {
-    itemDialogRef?.showModal()
-    // itemDialogRef?.show();
-    props.setIsItemModalOpen(true) // Tell parent that our dialog is open, used to signal that `Escape` key doesn't close <aside> when <dialog> is open.
-    setFormStore(props.item)
-    // Link formStore content to the one we selected.
-    return setIsDialogOpen(true) // TODO: can we user this setters state totell parent if modal is closed?
-  }
+    itemDialogRef?.showModal(); // itemDialogRef?.show();
+    props.setIsItemModalOpen(true); // Note: Tell parent that our dialog is open, used to signal that `Escape` key doesn't close <aside> when <dialog> is open.
+    setFormStore(props.item); // NOTE: Links formStore content to the one we selected.
+    return setIsDialogOpen(true); // TODO: can we user this setters state totell parent if modal is closed?
+  };
 
   const onSubmitUpdateCallback = async (data: TUpdateExpense) => {
-    // TODO: refactor code to use formStore and pick each value.. by using value,onInput to each HTML Field
-    // HACK: Simple work 10minutes.
-    const toUpdate = data
-    toUpdate.id = props.item.id
-
-    // console.log({ toUpdate })
-    await updateRowsDB({ from: props.item, to: data })
-  }
+    const toUpdate = data;
+    const idToUpdate = props.item.id;
+    toUpdate.id = idToUpdate;
+    const updated = await updateRowsDB({ from: props.item, to: data });
+    // TODO: Mutate global store expense of id `idToUpdate`.
+    clearAllFields();
+  };
 
   async function onConfirm(
     _ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }
@@ -86,21 +99,20 @@ export function ListItem(props: ListItemProps): JSX.Element {
     const data = await updateRowsDB({
       from: { id: props.item.id },
       to: props.item,
-    })
-    await handleSubmit(onSubmitUpdateCallback) // NOTE: Logic to handle submiting to server.
+    });
+    await handleSubmit(onSubmitUpdateCallback); // NOTE: Logic to handle submiting to server.
     // console.log(data) // Mutate global store with update row.
-    itemDialogRef?.close('TODO: add `selectEl.value`') // Send the input value to dialog -> output.
-    props.setIsItemModalOpen(false)
+    itemDialogRef?.close('TODO: add `selectEl.value`'); // Send the input value to dialog -> output.
+    props.setIsItemModalOpen(false);
+    clearAllFields();
   }
 
-  async function handleSubmitForm(
-    ev: Event & { submitter: HTMLElement } & {
-      currentTarget: HTMLFormElement
-      target: Element
-    }
-  ) {
-    ev.preventDefault()
-    // setIsFormOpen(false);
+  function onCloseModal(ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }) {
+    ev.preventDefault();
+    itemDialogRef?.close();
+    setIsDialogOpen(false);
+    setShowModal(false);
+    clearAllFields();
   }
 
   return (
@@ -149,15 +161,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
                 value="cancel"
                 formmethod="dialog"
                 class="place-self-end text-muted-foreground"
-                onClick={(ev) => {
-                  ev.preventDefault()
-                  itemDialogRef?.close()
-                  setIsDialogOpen(false)
-                  setShowModal(false)
-                  for (const key of Object.keys(formStore)) {
-                    clearField(key)
-                  }
-                }}
+                onClick={onCloseModal}
               >
                 <CrossIcon class="scale-[61%]" />
               </button>
@@ -230,20 +234,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
               data-actions
               class="@md:[&_button]:min-w-[4rem]! flex w-full flex-col place-content-end justify-end gap-4 px-2 @sm:flex-row"
             >
-              <button
-                onClick={(ev) => {
-                  ev.preventDefault()
-                  onDelete(ev)
-                  itemDialogRef?.close()
-                  setIsDialogOpen(false)
-                  setShowModal(false)
-                  for (const key of Object.keys(formStore)) {
-                    clearField(key)
-                  }
-                }}
-                class="basis-1/6 text-destructive"
-                type="button"
-              >
+              <button onClick={onDeleteForm} class="basis-1/6 text-destructive" type="button">
                 Delete
               </button>
               <button
@@ -260,23 +251,24 @@ export function ListItem(props: ListItemProps): JSX.Element {
           </div>
         </form>
       </dialog>
-      <output data-debug class="sr-only!" ref={itemDialogOutputRef} />
+      {/* TODO: Remove after we figure out returns of modal dialog*/}
+      <output data-debug class="sr-only! opacity-50" ref={itemDialogOutputRef} />
     </>
-  )
+  );
 }
 
 type DialogProps = {
-  itemDialogRef: HTMLDialogElement | undefined
-  closeItemDialogBtnRef: undefined
-  props: ListItemProps
+  itemDialogRef: HTMLDialogElement | undefined;
+  closeItemDialogBtnRef: undefined;
+  props: ListItemProps;
   handleConfirmBtn: (
     ev: MouseEvent & {
-      currentTarget: HTMLButtonElement
-      target: Element
+      currentTarget: HTMLButtonElement;
+      target: Element;
     }
-  ) => void
-  confirmItemDialogBtnRef: HTMLButtonElement | undefined
-}
+  ) => void;
+  confirmItemDialogBtnRef: HTMLButtonElement | undefined;
+};
 
 // Note: Opening dialogs via HTMLDialogElement.show() is preferred over the toggling of
 // the boolean open attribute. open={isDialogOpen()} // Because this dialog was opened via
@@ -316,7 +308,7 @@ export function Dialog(props: DialogProps) {
         </div>
       </form>
     </dialog>
-  )
+  );
 }
 
 // {/* Temporary overlay when dialogue is open */}
