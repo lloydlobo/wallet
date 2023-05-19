@@ -1,11 +1,15 @@
 .App {
   text-align: center;
 }
+
+/* REGION_START: BASE */
+
 .app {
   display: flex;
   flex-direction: column;
   max-height: 100vh;
 }
+
 .workWindow {
   &::-webkit-scrollbar {
     width: 6px;
@@ -53,65 +57,7 @@ aside.aside.open {
     flex-direction: column;
   }
 }
-
-/* REGION_START: ARCHIVE */
-
-/* Use margin inline start to position main content wrt aside, for smooth transitions  */
-main.main {
-  grid-area: main;
-  margin-inline: 16px;
-  border-radius: 24px;
-  @apply container mx-auto border;
-  @apply pb-6;
-  @apply mb-6;
-}
-
-/* NOTE: Animating with opacity, and transform is faster and smoother. */
-main.main.open {
-  /* transform: translateX(222px); */
-  margin-inline-start: 222px;
-}
-
-@media (max-width: 640px) {
-  main.main.open {
-    margin-inline-start: 0;
-  }
-}
-
-.list_window {
-  /* @apply rounded-t-[28px]; */
-  @apply h-full max-h-[72vh] flex-shrink md:max-h-[68vh];
-  /* @apply absolute bottom-0 top-0 h-screen;  */
-  @apply overflow-y-auto;
-  /* @apply mt-6; */
-  @apply scroll-m-6 py-6;
-
-  > section {
-    @apply bg-background;
-    @apply h-fit;
-    @apply mx-1 mb-4 p-6;
-    @apply rounded-3xl;
-  }
-
-  &::-webkit-scrollbar {
-    width: 6px;
-    @apply rounded-full;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/10;
-    @apply rounded-full;
-    @apply my-4 py-4;
-  }
-
-  &::-webkit-scrollbar-track {
-    /* Same as background. Keeping it subtle */
-    @apply bg-transparent;
-    @apply rounded-sm;
-  }
-}
-
-/* REGION_END: ARCHIVE */
+/* REGION_END: BASE */
 
 button.button,
 div.button {
@@ -148,13 +94,6 @@ div.button {
   }
 }
 
-/* form { */
-/*   width: 350px; */
-/*   margin: 20px; */
-/*   padding: 12px; */
-/*   border: 1px solid gray; */
-/* } */
-
 form .formControl {
   display: grid;
   grid-template-columns: 14ch 1fr;
@@ -162,16 +101,13 @@ form .formControl {
   align-items: center;
   @apply mb-2 px-2;
   @apply gap-2;
-
   > label {
     text-align: left;
     @apply text-sm tracking-wide text-muted-foreground;
   }
-
   > input[type="checkbox"] {
     margin-inline-start: 1ch;
   }
-
   > input[type="number"] {
     @apply font-mono;
     &::placeholder {
@@ -179,25 +115,6 @@ form .formControl {
     }
   }
 }
-
-.workspace {
-  overflow-y: auto;
-  /* @apply grid grid-flow-row-dense max-h-[88vh] mx-0 min-h-[88vh] overflow-y-auto; */
-  /* @apply block max-h-[88vh] mx-0 min-h-[88vh] overflow-y-auto; */
-  /* @apply block  mx-0  overflow-y-auto; */
-  /* @apply space-y-6; */
-  /* @apply rounded-[28px]; */
-  /* @apply pt-8; */
-  /* @media (prefers-color-scheme: dark) { } */
-}
-
-/* .workspace section { */
-/*     @apply bg-background; */
-/*     @apply h-fit; */
-/*     @apply mx-4 mb-4 p-8; */
-/*     @apply rounded-3xl; */
-/**/
-/* } */
 
 .logo {
   animation: logo-spin infinite 20s linear;

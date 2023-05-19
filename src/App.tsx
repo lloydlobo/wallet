@@ -214,7 +214,7 @@ const App: Component = () => {
       <main
         class={`${styles.workWindow} ${
           isAsideOpen() ? "md:ms-[233px]" : ""
-        } flex-1 flex-grow overflow-y-auto bg-muted px-8 pt-8 md:mx-24 md:mt-8 md:rounded-t-3xl`}
+        } md:mt-8! flex-1 flex-grow overflow-y-auto bg-muted px-6 pt-6 md:mx-16 md:rounded-t-3xl`}
       >
         <Workspace
           groupedState={groupedState()}
@@ -225,7 +225,7 @@ const App: Component = () => {
       <footer
         class={`${
           isAsideOpen() ? "md:ms-[233px]" : ""
-        } bg-muted px-8 pb-2 md:mx-24 md:mb-8 md:rounded-b-3xl`}
+        } bg-muted px-8 pb-2 md:mx-16 md:mb-6 md:rounded-b-3xl`}
       >
         {/* TODO: Call the setter state function before passing them as props. */}
         <CreateNewExpense
