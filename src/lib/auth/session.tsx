@@ -1,6 +1,22 @@
 import { createSignal, onCleanup, onMount, Show } from 'solid-js';
 import { z } from 'zod';
 
+/*
+ * Handling Tokens:
+ * The mockUserSession object contains the user session details, including the access token if applicable.
+ * When the user logs in (authService.login), the userStore.setSession function is called to set the session, including the access token.
+ * The access token can be accessed as userStore.session?.accessToken or userSession()?.accessToken within the components.
+ *
+ * Clearing Cookies:
+ * When the user logs out (authService.logout), the userStore.clearSession function is called to clear the session, including removing the local cookie.
+ * The userStore.clearSession function removes the userSession cookie by setting its expiration date to a past date, effectively deleting it.
+ *
+ * Handling Refresh:
+ * The ExampleHeaderAuth component uses the onMount SolidJS function to run code when the component is mounted.
+ * On mount, the component checks for the presence of the userSession cookie and restores the session if available.
+ * If a valid stored user session is found, it is set using userStore.setSession to restore the session details, including the access token.
+ */
+
 const mockUserSession = {
   isAuthenticated: true,
   user: {
@@ -81,6 +97,20 @@ const Header = () => {
   );
 };
 
+// The onMount function is used to check for the presence of the userSession cookie and restore
+// the user session if available. The setMounted signal is used to control when to render the
+// Header component, ensuring that the check for cookies is performed before rendering.
+//
+//
+// The storedUserSession variable is used to store the parsed session details from the cookie.
+//
+//
+// If a valid storedUserSession is found, it is set as the user session using the userStore.setSession method.
+//
+//
+// The Header component is wrapped inside a <Show> component, which ensures that it is only
+// rendered when the setMounted signal is true, indicating that the check for cookies has been performed.
+//
 export const ExampleHeaderAuth = () => {
   const [_, setMounted] = createSignal(false);
 
@@ -123,23 +153,23 @@ export const ExampleHeaderAuth = () => {
 // document.cookie = `refreshToken=${refreshToken}; expires=Thu, 01 Jan 2024 00:00:00 UTC; path=/`;
 //
 
-// Get the stored tokens from the cookies
-const cookies = document.cookie.split(';');
-let storedAccessToken;
-let storedRefreshToken;
-
-for (let i = 0; i < cookies.length; i++) {
-  const cookie = cookies[i].trim();
-  if (cookie.startsWith('accessToken=')) {
-    storedAccessToken = cookie.substring('accessToken='.length);
-  } else if (cookie.startsWith('refreshToken=')) {
-    storedRefreshToken = cookie.substring('refreshToken='.length);
-  }
-}
+// // Get the stored tokens from the cookies
+// const cookies = document.cookie.split(';');
+// let storedAccessToken;
+// let storedRefreshToken;
+//
+// for (let i = 0; i < cookies.length; i++) {
+//   const cookie = cookies[i].trim();
+//   if (cookie.startsWith('accessToken=')) {
+//     storedAccessToken = cookie.substring('accessToken='.length);
+//   } else if (cookie.startsWith('refreshToken=')) {
+//     storedRefreshToken = cookie.substring('refreshToken='.length);
+//   }
+// }
 
 // Use the retrieved tokens as needed
-console.log(storedAccessToken);
-console.log(storedRefreshToken);
+// console.log(storedAccessToken);
+// console.log(storedRefreshToken);
 
 /*
  # Define the workflow steps
@@ -151,7 +181,7 @@ console.log(storedRefreshToken);
       run: |
         # Simulate the login process
         await authService.login()
-        userSession(userStore.session)
+        userStore.setSession(mockUserSession)
 
 # Step 2: User logout
 - name: User Logout
@@ -160,22 +190,33 @@ console.log(storedRefreshToken);
       run: |
         # Simulate the logout process
         await authService.logout()
-        userSession(userStore.session)
+        userStore.clearSession()
 
-# Step 3: Render Header Component
+# Step 3: Check for user session on mount
+- name: Check User Session
+  steps:
+    - name: On Mount
+      run: |
+        # Check if user session cookie is present
+        const storedUserSession = await cookies.get('userSession')
+        if (storedUserSession) {
+          userStore.setSession(JSON.parse(storedUserSession))
+        }
+        setMounted(true)
+
+# Step 4: Render Header Component
 - name: Render Header Component
   steps:
     - name: Display Header
       run: |
-        # Render the header component
-        if userSession():
-          # Render user avatar and email
-          render(<Header userSession={userSession()} />)
-        else:
-          # Render login button
-          render(<Header onLogin={handleLogin} />)
+        # Render the header component only when mounted and user session is available
+        render(
+          <Show when={mounted && userStore.session}>
+            <Header />
+          </Show>
+        )
 
-# Step 4: Render App Component
+# Step 5: Render App Component
 - name: Render App Component
   steps:
     - name: Display App
@@ -191,12 +232,17 @@ console.log(storedRefreshToken);
       run: |
         executeStep("User Login")
 
-    # Execute Step 3: Render Header Component
+    # Execute Step 3: Check User Session
+    - name: Execute Check User Session Step
+      run: |
+        executeStep("Check User Session")
+
+    # Execute Step 4: Render Header Component
     - name: Execute Render Header Component Step
       run: |
         executeStep("Render Header Component")
 
-    # Execute Step 4: Render App Component
+    # Execute Step 5: Render App Component
     - name: Execute Render App Component Step
       run: |
         executeStep("Render App Component")
@@ -205,5 +251,4 @@ console.log(storedRefreshToken);
     - name: Execute User Logout Step
       run: |
         executeStep("User Logout")
-
  */
