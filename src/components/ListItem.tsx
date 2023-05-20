@@ -39,6 +39,8 @@ export function ListItem(props: ListItemProps): JSX.Element {
     });
   });
 
+  // TODO: use this wisely. 
+  // FIXME: Is this avoiding updating the item?
   function clearAllFields() {
     for (const key of Object.keys(formStore)) {
       clearField(key);
@@ -55,7 +57,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
     itemDialogRef?.close();
     setIsDialogOpen(false);
     setShowModal(false);
-    clearAllFields();
+    // clearAllFields();
   }
 
   function onDelete(ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }) {
@@ -72,7 +74,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
         ? 'No return value'
         : `ReturnValue:${itemDialogRef?.returnValue}.`;
     props.setIsItemModalOpen(false);
-    clearAllFields();
+    // clearAllFields();
   }
 
   // `show()` <- Displays the dialog element. vs
@@ -90,7 +92,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
     toUpdate.id = idToUpdate;
     const updated = await updateRowsDB({ from: props.item, to: data });
     // TODO: Mutate global store expense of id `idToUpdate`.
-    clearAllFields();
+    // clearAllFields();
   };
 
   async function onConfirm(
@@ -104,7 +106,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
     // console.log(data) // Mutate global store with update row.
     itemDialogRef?.close('TODO: add `selectEl.value`'); // Send the input value to dialog -> output.
     props.setIsItemModalOpen(false);
-    clearAllFields();
+    // clearAllFields();
   }
 
   function onCloseModal(ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }) {
@@ -112,7 +114,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
     itemDialogRef?.close();
     setIsDialogOpen(false);
     setShowModal(false);
-    clearAllFields();
+    // clearAllFields();
   }
 
   return (
@@ -207,9 +209,9 @@ export function ListItem(props: ListItemProps): JSX.Element {
                 value={asHTMLInputDateValue(
                   new Date(
                     formStore.transaction_date ??
-                      formStore.created_at ??
-                      formStore.updated_at ??
-                      props.item.updated_at
+                    formStore.created_at ??
+                    formStore.updated_at ??
+                    props.item.updated_at
                   )
                 )}
               />{' '}
