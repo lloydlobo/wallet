@@ -16,3 +16,28 @@ export function isEqual(a: unknown, b: unknown): boolean {
   // rome-ignore lint/suspicious/noSelfCompare: <explanation>
   return a === b || (a !== a && b !== b);
 }
+
+/**
+ * in-source test suites.
+ */
+if (import.meta.vitest) {
+  const { test, assert } = import.meta.vitest;
+  // const { it, expect } = import.meta.vitest
+
+  test('isEqual', () => {
+    assert.isTrue(isEqual(5, 5));
+    assert.isTrue(isEqual('hello', 'hello'));
+    assert.isTrue(isEqual(null, null));
+    assert.isTrue(isEqual(undefined, undefined));
+    assert.isTrue(isEqual(NaN, NaN));
+
+    assert.isFalse(isEqual(5, 10));
+    assert.isFalse(isEqual('hello', 'world'));
+    assert.isFalse(isEqual(null, undefined));
+    assert.isFalse(isEqual(NaN, 0));
+    assert.isFalse(isEqual({}, []));
+    assert.isFalse(isEqual({}, {}));
+    assert.isFalse(isEqual([], []));
+    assert.isFalse(isEqual({ prop: 'value' }, { prop: 'value' }));
+  });
+}

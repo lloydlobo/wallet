@@ -1,20 +1,17 @@
-/**
- * This implementation uses the radix sort algorithm along with the counting sort algorithm
- * to sort the items based on their timestamps.
+/*
+ * This implementation uses the radix sort algorithm along with the counting sort algorithm to
+ * sort the items based on their timestamps.
  *
- * The radixSort() function iterates through the digits of the largest timestamp and uses
- * the countingSort() function to sort the items based on the
- * current digit.
- *
- * The countingSort() function uses an array of counts to count the number of items with
- * the current digit and then concatenates the counts to create the sorted output array.
- *
- * Using this optimized sorting algorithm reduces the time complexity of the sorting step from
- * O(n log n) to O(kn), which is a significant improvement if the number of items is large.
+ * - The radixSort() function iterates through the digits of the largest timestamp and uses the
+ *   countingSort() function to sort the items based on the current digit.
+ * - The countingSort() function uses an array of counts to count the number of items with the
+ *   current digit and then concatenates the counts to create the sorted output array.
+ * - Using this optimized sorting algorithm reduces the time complexity of the sorting step from
+ *   O(n logn) to O(kn), which is a significant improvement if the number of items is large.
  */
 
 import { Ordering } from '@/lib/enums';
-import { TDatabaseExpense } from '@/lib/types-supabase';
+import { TDatabaseExpense as TRowExpense } from '@/lib/types-supabase';
 
 /**
  * Sorts the items based on their timestamps using the radix sort algorithm.
@@ -22,7 +19,7 @@ import { TDatabaseExpense } from '@/lib/types-supabase';
  * @param cmp - The ordering direction for the sort (Ordering.Less for ascending, Ordering.Greater for descending).
  * @returns The sorted array of items.
  */
-export function radixSort(items: TDatabaseExpense[], cmp: Ordering): TDatabaseExpense[] {
+export function radixSort(items: TRowExpense[], cmp: Ordering): TRowExpense[] {
   /**
    * Finds the maximum timestamp from the items array.
    */
@@ -37,8 +34,9 @@ export function radixSort(items: TDatabaseExpense[], cmp: Ordering): TDatabaseEx
    * Performs radix sort by iterating through the digits of the largest timestamp.
    */
   while (Math.floor(maxTimestamp / divisor) > 0) {
+    // rome-ignore lint/style/noParameterAssign: Reassigning a function parameter is confusing.
     items = countingSort({
-      array: items as TDatabaseExpense[],
+      array: items as TRowExpense[],
       divisor,
       cmp,
     });
@@ -49,7 +47,7 @@ export function radixSort(items: TDatabaseExpense[], cmp: Ordering): TDatabaseEx
 }
 
 type CountingSort = {
-  array: TDatabaseExpense[];
+  array: TRowExpense[];
   divisor: number;
   cmp: Ordering;
 };
@@ -59,9 +57,9 @@ type CountingSort = {
  * @param props - The counting sort properties including the array, divisor, and cmp.
  * @returns The sorted array of items based on the current digit.
  */
-function countingSort(props: CountingSort): TDatabaseExpense[] {
-  const counts = Array.from({ length: 10 }, () => [] as TDatabaseExpense[]);
-  const output: TDatabaseExpense[] = [];
+function countingSort(props: CountingSort): TRowExpense[] {
+  const counts = Array.from({ length: 10 }, () => [] as TRowExpense[]);
+  const output: TRowExpense[] = [];
 
   /**
    * Counts the number of items with the current digit and puts them in the corresponding count array.

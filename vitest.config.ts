@@ -18,5 +18,14 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     transformMode: { web: [/\.[jt]sx?$/] },
+    // Include globs for in-source test files
+    includeSource: ['src/**/*.{js,ts}']
+  },
+  // For the production build, you will need to set the define options in your config file, letting
+  // the bundler do the dead code elimination. 
+  // https://vitest.dev/guide/in-source.html
+  // NOTE: Why are we duplicating this here and in vite.config.ts
+  define: {
+    'import.meta.vitest': 'undefined'
   }
 });
