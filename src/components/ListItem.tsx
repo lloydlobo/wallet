@@ -210,9 +210,9 @@ export function ListItem(props: ListItemProps): JSX.Element {
                 value={asHTMLInputDateValue(
                   new Date(
                     formStore.transaction_date ??
-                    formStore.created_at ??
-                    formStore.updated_at ??
-                    props.item.updated_at
+                      formStore.created_at ??
+                      formStore.updated_at ??
+                      props.item.updated_at
                   )
                 )}
               />{' '}

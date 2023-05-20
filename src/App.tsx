@@ -9,11 +9,18 @@ import {
 } from '@/components/icons';
 import { ListItem } from '@/components/ListItem';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tooltip } from '@/components/ui/tooltip';
+import { assert } from '@/lib/assert';
+import { cn } from '@/lib/cn';
 import { asHTMLInputDateValue } from '@/lib/date';
 import { getDB, insertRowsDB } from '@/lib/db/controllers';
 import { Ordering } from '@/lib/enums';
 import { useForm } from '@/lib/hooks/create-form';
 import { radixSort } from '@/lib/radix-sort';
+import { supabase } from '@/lib/supabase-client';
 import { TRowExpense, TUpdateExpense } from '@/lib/types-supabase';
 import {
   Accessor,
@@ -28,10 +35,8 @@ import {
 } from 'solid-js';
 import { JSX } from 'solid-js/jsx-runtime';
 import { z } from 'zod';
-import { Button } from './components/ui/button';
-import { Skeleton } from './components/ui/skeleton';
-import { Tooltip } from './components/ui/tooltip';
-import { cn } from './lib/cn';
+import { ExampleHeaderAuth } from './lib/auth/session';
+import { isEqual } from './lib/is-equal';
 
 type TGroupedExpense = [string, TRowExpense[]];
 
@@ -345,12 +350,12 @@ function FormCreateExpense(props: CreateNewExpenseProps) {
               />
             </div>
             <div class={styles.formControl}>
-              <label for="isCashCheckbox">Cash</label>
+              <label for="isCashCheckboxCreate">Cash</label>
               <input
                 checked={props.formStore.is_cash}
                 onChange={props.updateFormField('is_cash')}
                 type="checkbox"
-                id="isCashCheckbox"
+                id="isCashCheckboxCreate"
               />
             </div>
           </div>
@@ -430,31 +435,91 @@ function Aside(props: AsideProps): JSX.Element {
   );
 }
 
-type HeaderProps = { toggleSidebar: () => boolean };
+type TLoginCredential = {
+  email: string;
+  password: string;
+};
+/** @see https://supabase.com/docs/reference/javascript/auth-signinwithpassword */
+async function signInWithEmailServer(credential: TLoginCredential) {
+  const email = z.string().parse(credential.email);
+  const password = z.string().parse(credential.password);
 
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  return { data, error };
+}
+async function signOutServer() {
+  const { error } = await supabase.auth.signOut();
+  return { error };
+}
+
+type HeaderProps = { toggleSidebar: () => boolean };
 // TODO: Add modal popup to register or let user login.
 // TODO: Create or refactor extract modal dialog from the 2 previos dialogs we created.
 function Header(props: HeaderProps): JSX.Element {
   const [isUserAuthorized, setIsUserAuthorized] = createSignal<boolean>(false);
+  const [showLoginForm, setShowLoginForm] = createSignal(false);
+  const [credentials, setCredentials] = createSignal({
+    email: '',
+    password: '',
+  });
 
-  function toggleUserAuthState() {
-    setIsUserAuthorized((prev) => !prev);
-  }
+  const toggleUserAuthState = () => setIsUserAuthorized((prev) => !prev);
+  const toggleShowLoginForm = () => setShowLoginForm((prev) => !prev);
 
-  function onLogin(ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }): void {
+  async function onLoginClick(
+    ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }
+  ): Promise<void> {
     ev.preventDefault();
-    toggleUserAuthState();
+    toggleShowLoginForm();
   }
-
-  function onLogout(ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }): void {
+  async function onLogoutClick(
+    ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }
+  ): Promise<void> {
     ev.preventDefault();
-    toggleUserAuthState();
+
+    const { error } = await signOutServer();
+    console.log(error);
+    if (!error) {
+      toggleUserAuthState();
+    } else {
+      console.error(error);
+    }
+  }
+  // type TSupabaseData={
+  //   session:any,
+  //   user:any,
+  // }
+
+  async function handleLoginForm(
+    ev: Event & { submitter: HTMLElement } & { currentTarget: HTMLFormElement; target: Element }
+  ): Promise<void> {
+    ev.preventDefault();
+
+    // const formData = new FormData(ev.currentTarget);
+    // console.log({ formData: formData.values() })
+
+    const credential: TLoginCredential = {
+      email: credentials().email,
+      password: credentials().password,
+    };
+    // assert(isEqual(1, 1), new Error("1 is not equal to 1"));
+
+    const { data, error } = await signInWithEmailServer(credential); // Need trycatch?
+    console.log(data);
+    if (!error) {
+      toggleUserAuthState();
+      toggleShowLoginForm();
+      console.log({ data });
+    } else {
+      console.error(error);
+    }
   }
 
   return (
     <header
       class={`${styles.header} border! mb-1! sticky! h-24! top-0 z-10 overflow-x-clip px-6 py-4`}
     >
+      <ExampleHeaderAuth />
       <div class="flex w-full  items-center  justify-between overflow-x-visible">
         <div class="flex place-content-center items-center justify-center gap-4">
           <button
@@ -474,10 +539,48 @@ function Header(props: HeaderProps): JSX.Element {
         </div>
 
         <div class="nav-end flex place-content-center items-center justify-center gap-4">
+          <Show when={showLoginForm()}>
+            <form onSubmit={(ev) => handleLoginForm(ev)} action="" class="flex items-center gap-2">
+              <div class="basis-1/3">
+                <label for="formInputEmail" class="text-muted-foreground">
+                  Email
+                </label>
+                <Input
+                  id="formInputEmail"
+                  value={credentials().email}
+                  type="email"
+                  autofocus
+                  onInput={(ev) =>
+                    setCredentials((prev) => ({ ...prev, email: ev.currentTarget.value }))
+                  }
+                />
+              </div>
+              <div class="basis-1/3">
+                <label for="formInputPassword" class="text-muted-foreground">
+                  Password
+                </label>
+                <Input
+                  id="formInputPassword"
+                  type="password"
+                  value={credentials().password}
+                  onInput={(ev) => {
+                    setCredentials((prev) => ({ ...prev, password: ev.currentTarget.value }));
+                  }}
+                />
+              </div>
+              <Button type="submit">Submit</Button>
+            </form>
+          </Show>
+
           <Show
             when={isUserAuthorized()}
             fallback={
-              <Button onClick={onLogin} type="button" variant={'link'}>
+              <Button
+                onClick={onLoginClick}
+                disabled={showLoginForm()}
+                type="button"
+                variant={'link'}
+              >
                 <Tooltip
                   className="sr-only translate-x-8 translate-y-2"
                   text="Login"
@@ -493,7 +596,7 @@ function Header(props: HeaderProps): JSX.Element {
               asChild
               variant={'link'}
               aria-label="User Menu"
-              onClick={onLogout}
+              onClick={onLogoutClick}
               type="button"
               className="transition-all duration-100 ease-out [&_svg]:hover:outline"
             >
