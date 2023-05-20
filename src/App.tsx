@@ -1,5 +1,12 @@
 import styles from '@/App.module.css';
-import { ActivityIcon, CrossIcon, HamburgerIcon, PlusIcon, SettingsIcon } from '@/components/icons';
+import {
+  ActivityIcon,
+  CrossIcon,
+  HamburgerIcon,
+  PlusIcon,
+  SettingsIcon,
+  UserIcon,
+} from '@/components/icons';
 import { ListItem } from '@/components/ListItem';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { asHTMLInputDateValue } from '@/lib/date';
@@ -21,7 +28,9 @@ import {
 } from 'solid-js';
 import { JSX } from 'solid-js/jsx-runtime';
 import { z } from 'zod';
+import { Button } from './components/ui/button';
 import { Skeleton } from './components/ui/skeleton';
+import { Tooltip } from './components/ui/tooltip';
 import { cn } from './lib/cn';
 
 type TGroupedExpense = [string, TRowExpense[]];
@@ -210,10 +219,19 @@ type WorkspaceProps = {
   setIsItemModalOpen: Setter<boolean>;
 };
 function Workspace(props: WorkspaceProps) {
-  const SkeletonSection = () => (
+  // Add your additional props here
+  type SkeletonSectionProps = JSX.HTMLAttributes<HTMLElement> & {
+    className?: string;
+  };
+
+  const SkeletonSection = (props: SkeletonSectionProps): JSX.Element => (
     <section
-      class="justify-center! mx-auto flex items-center space-x-4 rounded-xl bg-card p-6 transition-all"
+      class={cn(
+        'justify-center! mx-auto flex items-center space-x-4 rounded-xl bg-card p-6 transition-all',
+        props.className
+      )}
       style={{ 'padding-block': '2rem' }}
+      {...props}
     >
       <Skeleton class={'h-12 w-12 rounded-full'} />
       <div class="space-y-2">
@@ -226,7 +244,9 @@ function Workspace(props: WorkspaceProps) {
   return (
     <Show
       when={props.groupedState}
-      fallback={<For each={Array.from({ length: 4 })}>{(_) => <SkeletonSection />}</For>}
+      fallback={
+        <For each={Array.from({ length: 4 })}>{(_) => <SkeletonSection className="mb-2" />}</For>
+      }
     >
       {/* TODO:Use zod to validate or use better types. */}
       <For each={props.groupedState as unknown[] as [string, TRowExpense[]]}>
@@ -411,10 +431,31 @@ function Aside(props: AsideProps): JSX.Element {
 }
 
 type HeaderProps = { toggleSidebar: () => boolean };
+
+// TODO: Add modal popup to register or let user login.
+// TODO: Create or refactor extract modal dialog from the 2 previos dialogs we created.
 function Header(props: HeaderProps): JSX.Element {
+  const [isUserAuthorized, setIsUserAuthorized] = createSignal<boolean>(false);
+
+  function toggleUserAuthState() {
+    setIsUserAuthorized((prev) => !prev);
+  }
+
+  function onLogin(ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }): void {
+    ev.preventDefault();
+    toggleUserAuthState();
+  }
+
+  function onLogout(ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }): void {
+    ev.preventDefault();
+    toggleUserAuthState();
+  }
+
   return (
-    <header class={`${styles.header} border! mb-1! sticky! top-0 z-10 px-8 py-4`}>
-      <div class="flex w-full items-center justify-between">
+    <header
+      class={`${styles.header} border! mb-1! sticky! h-24! top-0 z-10 overflow-x-clip px-6 py-4`}
+    >
+      <div class="flex w-full  items-center  justify-between overflow-x-visible">
         <div class="flex place-content-center items-center justify-center gap-4">
           <button
             type="button"
@@ -432,28 +473,48 @@ function Header(props: HeaderProps): JSX.Element {
           </div>
         </div>
 
-        <div class="nav-end grid grid-flow-col items-center gap-4">
-          <button type="button" class="text-muted-foreground">
-            {/* rome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width={24 + 12}
-              height={24 + 12}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="lucide lucide-user-circle-2"
-              data-darkreader-inline-stroke=""
-              style="--darkreader-inline-stroke:currentColor;"
+        <div class="nav-end flex place-content-center items-center justify-center gap-4">
+          <Show
+            when={isUserAuthorized()}
+            fallback={
+              <Button onClick={onLogin} title="Login" type="button" variant={'link'}>
+                Login
+              </Button>
+            }
+          >
+            <Button
+              role="menu"
+              asChild
+              variant={'link'}
+              aria-label="User Menu"
+              onClick={onLogout}
+              type="button"
+              className="transition-all duration-100 ease-out [&_svg]:hover:outline"
             >
-              <path d="M18 20a6 6 0 0 0-12 0" />
-              <circle cx="12" cy="10" r="4" />
-              <circle cx="12" cy="12" r="10" />
-            </svg>
-          </button>
+              <Tooltip
+                // className="text-start items-end top-full place-self-end translate-y-8! -translate-x-10!"
+                // placement={"bottomleft"}
+                // color={"default"}
+                // size={"large"}
+                className="translate-x-8 translate-y-2"
+                transition={'default'}
+                text={(() => {
+                  const username = 'User';
+                  const useremail = 'user@gmail.com';
+                  const authProvider = 'Google Account';
+                  return `${authProvider}\n${username}\n${useremail}`;
+                })()}
+              >
+                <label for="logoutIcon" class="sr-only">
+                  Logout
+                </label>
+                <UserIcon
+                  id="logoutIcon"
+                  class="outline-3 w-fit rounded-full outline-accent-foreground/50 transition-all duration-100 ease-in"
+                />
+              </Tooltip>
+            </Button>
+          </Show>
         </div>
       </div>
     </header>

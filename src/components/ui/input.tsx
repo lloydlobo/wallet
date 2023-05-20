@@ -1,13 +1,28 @@
 import { cn } from '@/lib/cn';
 import { JSX } from 'solid-js/jsx-runtime';
 
-export interface InputProps extends JSX.InputHTMLAttributes<HTMLInputElement> {
-  // Add your additional props here
+/**
+ * @typedef {JSX.InputHTMLAttributes<HTMLInputElement>} InputProps
+ * @property {HTMLInputElement | undefined} ref - Optional reference to the input element.
+ * @property {string} className - Custom class to append to the base `class` styling.
+ * @description
+ * Represents the properties for an input element. The `InputProps` type
+ * extends `JSX.InputHTMLAttributes<HTMLInputElement>`, which is a built-in
+ * TypeScript type representing the HTML attributes that can be applied to an <input> element.
+ * It includes two additional properties: `ref` and `className`. The `ref` property is
+ * optional and can be of type `HTMLInputElement` or `undefined`, and the `className` property
+ * is of type `string`.
+ */
+//
+export type InputProps = JSX.InputHTMLAttributes<HTMLInputElement> & {
+  /** @property {HTMLInputElement | undefined} ref - Optional reference to the input element. */
   ref?: HTMLInputElement | undefined;
-  /** Custom class to append to the base `class` styling. */
+
+  /** @property {string} className - Custom class to append to the base `class` styling. */
   className?: string;
-  // type?: string
-}
+
+  // Add your additional props here...
+};
 
 const Input = (props: InputProps) => {
   return (
@@ -20,7 +35,6 @@ const Input = (props: InputProps) => {
         props.className
       )}
       {...props}
-      // ref={props.ref}
     />
   );
 };
@@ -28,3 +42,5 @@ const Input = (props: InputProps) => {
 Input.displayName = 'Input';
 
 export { Input };
+
+// export interface IInputProps extends JSX.InputHTMLAttributes<HTMLInputElement> { ref ?: HTMLInputElement | undefined; className?: string; }

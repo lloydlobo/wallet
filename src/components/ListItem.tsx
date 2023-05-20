@@ -39,7 +39,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
     });
   });
 
-  // TODO: use this wisely. 
+  // TODO: use this wisely.
   // FIXME: Is this avoiding updating the item?
   function clearAllFields() {
     for (const key of Object.keys(formStore)) {
@@ -180,6 +180,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
                 autofocus={true}
                 required
                 id="formName"
+                className="border-blue-400"
                 value={formStore.name} // value={formStore.name}
                 onChange={updateFormField('name')} // use onChange for less control on reactivity or more performance.
               />
@@ -209,9 +210,9 @@ export function ListItem(props: ListItemProps): JSX.Element {
                 value={asHTMLInputDateValue(
                   new Date(
                     formStore.transaction_date ??
-                    formStore.created_at ??
-                    formStore.updated_at ??
-                    props.item.updated_at
+                      formStore.created_at ??
+                      formStore.updated_at ??
+                      props.item.updated_at
                   )
                 )}
               />{' '}
