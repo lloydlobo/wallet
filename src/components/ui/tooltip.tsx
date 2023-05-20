@@ -63,14 +63,14 @@ const Tooltip = (props: TooltipProps) => {
   const handleMouseEnter = (
     ev: MouseEvent & { currentTarget: HTMLDivElement; target: Element }
   ) => {
-    ev.preventDefault();
+    // ev.preventDefault();
     setIsHovered(true);
   };
 
   const handleMouseLeave = (
     ev: MouseEvent & { currentTarget: HTMLDivElement; target: Element }
   ) => {
-    ev.preventDefault();
+    // ev.preventDefault();
     setIsHovered(false);
   };
 
@@ -84,6 +84,8 @@ const Tooltip = (props: TooltipProps) => {
     props.className
   );
 
+  // PERF: If user clicks the {props.children}, do not trigger `isHovered()`.
+  // PERF: If user wants to select the hovered tooltip data, pause transition.
   return (
     <div
       class="relative flex flex-col"
@@ -95,7 +97,9 @@ const Tooltip = (props: TooltipProps) => {
         class={cn(
           'absolute z-10 border',
           tooltipClasses,
-          isHovered() ? 'opacity-100' : 'opacity-0 delay-300'
+          isHovered()
+            ? 'pointer-events-auto opacity-100 delay-700'
+            : 'pointer-events-none opacity-0  delay-500'
         )}
       >
         {props.text}

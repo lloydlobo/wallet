@@ -12,7 +12,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { asHTMLInputDateValue } from '@/lib/date';
 import { getDB, insertRowsDB } from '@/lib/db/controllers';
 import { Ordering } from '@/lib/enums';
-import { useForm } from '@/lib/hooks/use-form';
+import { useForm } from '@/lib/hooks/create-form';
 import { radixSort } from '@/lib/radix-sort';
 import { TRowExpense, TUpdateExpense } from '@/lib/types-supabase';
 import {
@@ -477,8 +477,14 @@ function Header(props: HeaderProps): JSX.Element {
           <Show
             when={isUserAuthorized()}
             fallback={
-              <Button onClick={onLogin} title="Login" type="button" variant={'link'}>
-                Login
+              <Button onClick={onLogin} type="button" variant={'link'}>
+                <Tooltip
+                  className="sr-only translate-x-8 translate-y-2"
+                  text="Login"
+                  transition={'default'}
+                >
+                  Login
+                </Tooltip>
               </Button>
             }
           >
@@ -492,10 +498,6 @@ function Header(props: HeaderProps): JSX.Element {
               className="transition-all duration-100 ease-out [&_svg]:hover:outline"
             >
               <Tooltip
-                // className="text-start items-end top-full place-self-end translate-y-8! -translate-x-10!"
-                // placement={"bottomleft"}
-                // color={"default"}
-                // size={"large"}
                 className="translate-x-8 translate-y-2"
                 transition={'default'}
                 text={(() => {
