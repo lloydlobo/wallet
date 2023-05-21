@@ -1,101 +1,86 @@
-import { Ordering } from '@/lib/enums';
-import { radixSort } from '@/lib/radix-sort';
-import { TRowExpense } from '@/lib/types-supabase';
+import { Ordering } from '../../src/lib/enums';
+import { radixSort } from '../../src/lib/radix-sort';
+import { TRowExpense, TUpdateExpense } from '@/lib/types-supabase';
 
 import { assert, describe, expect, test } from 'vitest';
+import fc from 'fast-check';
 
-describe('warmup testrun', () => {
-  test('Math.sqrt()', () => {
-    expect(Math.sqrt(4)).toBe(2);
-    expect(Math.sqrt(144)).toBe(12);
-    expect(Math.sqrt(2)).toBe(Math.SQRT2);
+describe('warmup testrun sortNumbersAscending', () => {
+  describe('test bubble sort with values', () => {
+    test('should keep an already sorted array sorted', () => {
+      expect(sortNumbersAscending([1, 2, 3])).toEqual([1, 2, 3]);
+    });
+    test('should sort a randomly ordered array in ascending order', () => {
+      expect(sortNumbersAscending([3, 1, 2])).toEqual([1, 2, 3]);
+    });
+    test('should sort a descending ordered array in ascending order', () => {
+      expect(sortNumbersAscending([3, 1, 2])).toEqual([1, 2, 3]);
+    });
   });
 
-  test('JSON', () => {
-    const input = {
-      foo: 'hello',
-      bar: 'world',
-    };
-    const output = JSON.stringify(input);
-    expect(output).eq('{"foo":"hello","bar":"world"}');
-    assert.deepEqual(JSON.parse(output), input, 'matches original');
+  describe('test bubble sort with fast-check(quickcheck) arbitrary values', () => {
+    test('should sort numeric elements from the smallest to the largest one', () => {
+      fc.assert(
+        fc.property(fc.array(fc.integer()), (data) => {
+          const sortedData = sortNumbersAscending(data);
+          for (let i = 1; i < data.length; i++) {
+            expect(sortedData[i - 1]).toBeLessThanOrEqual(sortedData[i]);
+          }
+        })
+      );
+    });
   });
 });
 
-// FIXME: With the following test, the test build or compiler system panics with, undetectable file.
+describe('sort', () => {
+  test('should have the same length as source', () => {
+    const source: TRowExpense[] = [];
+    expect(radixSort(source, Ordering.Less).length).toBe(source.length);
+  });
+});
 
 /*
-describe('radixSort', () => {
+ * Testing Helpers
+ */
 
-  const initial = [
-    { transaction_date: '2023-05-20T10:30:00Z' },
-    { transaction_date: '2023-05-20T08:15:00Z' },
-    { transaction_date: '2023-05-20T11:45:00Z' },
-    { transaction_date: '2023-05-20T09:00:00Z' },
-  ];
+const seedArb = fc.integer().noBias().noShrink();
 
-  const items: TRowExpense[] = [];
-  for (let index = 0; index < initial.length; index++) {
-    const item = {
-      amount: 0,
-      created_at: "",
-      description: "",
-      id: 0,
-      is_cash: true,
-      name: "",
-      owner: "",
-      transaction_date: initial[index].transaction_date,
-      updated_at: "",
-    };
-    items[index] = item;
+const recordModel = {
+  name: fc.string(),
+  description: fc.string(),
+  amount: fc.float(),
+  transaction_date: fc.string(),
+  created_at: fc.string(),
+  updated_at: fc.string(),
+  is_cash: fc.boolean(),
+  owner: fc.string(),
+  id: fc.integer(),
+};
+const inputsArb: fc.Arbitrary<TRowExpense> = fc.record(recordModel);
+
+/*
+ * Mock Helpers
+ */
+
+/**
+ * Similar to Bubble sort.
+ */
+const sortNumbersAscending = (array: number[]): number[] => {
+  const len = array.length;
+
+  const swap = (vec: number[], index: number): void => {
+    const temp = vec[index];
+    vec[index] = vec[index + 1];
+    vec[index + 1] = temp;
+  };
+
+  for (let i = 0; i < len - 1; i++) {
+    for (let j = 0; j < len - i - 1; j++) {
+      if (array[j] > array[j + 1]) {
+        swap(array, j);
+      }
+    }
   }
 
-  describe('Valid date formats', () => {
-    assert(1 === 0 + 1);
-
-
-    // describe('Ascending order', () => {
-    //   const sorted = radixSort(items, Ordering.Less);
-    //   assert.deepEqual(sorted[0].transaction_date, items[0].transaction_date);
-    // });
-
-    //
-    //   describe('Descending order', () => {
-    //     const sorted = radixSort(items, 'Greater');
-    //     assert.deepEqual(sorted, [
-    //       { transaction_date: '2023-05-20T11:45:00Z' },
-    //       { transaction_date: '2023-05-20T10:30:00Z' },
-    //       { transaction_date: '2023-05-20T09:00:00Z' },
-    //       { transaction_date: '2023-05-20T08:15:00Z' },
-    //     ]);
-    //   });
-    // });
-    //
-    // describe('Invalid date formats', () => {
-    //   const items = [
-    //     { transaction_date: '2023-05-20T10:30:00Z' },
-    //     { transaction_date: 'invalid-date-format' },
-    //     { transaction_date: '2023-05-20T11:45:00Z' },
-    //   ];
-    //
-    //   describe('Ascending order', () => {
-    //     const sorted = radixSort(items, 'Less');
-    //     assert.deepEqual(sorted, [
-    //       { transaction_date: '2023-05-20T10:30:00Z' },
-    //       { transaction_date: '2023-05-20T11:45:00Z' },
-    //       { transaction_date: 'invalid-date-format' },
-    //     ]);
-    //   });
-    //
-    //   describe('Descending order', () => {
-    //     const sorted = radixSort(items, 'Greater');
-    //     assert.deepEqual(sorted, [
-    //       { transaction_date: 'invalid-date-format' },
-    //       { transaction_date: '2023-05-20T11:45:00Z' },
-    //       { transaction_date: '2023-05-20T10:30:00Z' },
-    //     ]);
-    //   });
-  });
-});
-
-*/
+  return array;
+};

@@ -10,8 +10,7 @@
     "jsxImportSource": "solid-js",
     "types": [
       "vite/client",
-      // https://vitest.dev/guide/in-source.html#typescript
-      "vitest/importMeta"
+      "vitest/importMeta" // https://vitest.dev/guide/in-source.html#typescript
     ],
     "noEmit": true,
     "isolatedModules": true,

@@ -1,8 +1,11 @@
-import { createSignal, JSX } from 'solid-js';
+/* eslint-disable no-unused-vars */
 
 import { cn } from '@/lib/cn';
-import { ClassArray, ClassDictionary } from 'clsx';
+
 import { cva, VariantProps } from 'class-variance-authority';
+import { createSignal, JSX } from 'solid-js';
+import { Fragment } from './fragment';
+// import { ClassArray, ClassDictionary } from 'clsx';
 
 const tooltipVariants = cva('absolute', {
   variants: {
@@ -54,35 +57,40 @@ type TooltipProps = {
   transition?: VariantProps<typeof tooltipVariants>['transition'];
   children: JSX.Element;
   text: string;
-  className?: string;
+  withClass?: string;
+};
+
+type TargetDiv = {
+  currentTarget: HTMLDivElement;
+  target: Element;
 };
 
 const Tooltip = (props: TooltipProps) => {
   const [isHovered, setIsHovered] = createSignal(false);
 
-  const handleMouseEnter = (
-    ev: MouseEvent & { currentTarget: HTMLDivElement; target: Element }
-  ) => {
-    // ev.preventDefault();
+  const handleMouseEnter = (_ev: MouseEvent & TargetDiv) => {
     setIsHovered(true);
   };
-
-  const handleMouseLeave = (
-    ev: MouseEvent & { currentTarget: HTMLDivElement; target: Element }
-  ) => {
-    // ev.preventDefault();
+  const handleMouseLeave = (_ev: MouseEvent & TargetDiv) => {
     setIsHovered(false);
   };
 
-  const tooltipClasses = cn(
-    tooltipVariants({
-      placement: props.placement,
-      size: props.size,
-      color: props.color,
-      transition: props.transition,
-    }),
-    props.className
-  );
+  const styleScopedHandler = (): string =>
+    cn(
+      'absolute z-10 border',
+      cn(
+        tooltipVariants({
+          placement: props.placement,
+          size: props.size,
+          color: props.color,
+          transition: props.transition,
+        }),
+        props.withClass
+      ),
+      isHovered()
+        ? 'pointer-events-auto opacity-100 delay-700'
+        : 'pointer-events-none opacity-0  delay-500'
+    );
 
   // PERF: If user clicks the {props.children}, do not trigger `isHovered()`.
   // PERF: If user wants to select the hovered tooltip data, pause transition.
@@ -93,17 +101,7 @@ const Tooltip = (props: TooltipProps) => {
       onMouseLeave={(ev) => handleMouseLeave(ev)}
     >
       {props.children}
-      <div
-        class={cn(
-          'absolute z-10 border',
-          tooltipClasses,
-          isHovered()
-            ? 'pointer-events-auto opacity-100 delay-700'
-            : 'pointer-events-none opacity-0  delay-500'
-        )}
-      >
-        {props.text}
-      </div>
+      <div class={styleScopedHandler()}>{props.text}</div>
     </div>
   );
 };
@@ -111,38 +109,3 @@ const Tooltip = (props: TooltipProps) => {
 Tooltip.displayName = 'Tooltip';
 
 export { Tooltip };
-
-const getPlacement = (value: TooltipProps['placement']): string => {
-  let placement: string;
-  switch (value) {
-    case 'top':
-      placement = cn('bottom-full');
-      break;
-    case 'bottom':
-      placement = cn('top-full');
-      break;
-    case 'left':
-      placement = cn('right-full');
-      break;
-    case 'right':
-      placement = cn('left-full');
-      break;
-    case 'topleft':
-      placement = cn('bottom-full', 'right-full');
-      break;
-    case 'topright':
-      placement = cn('bottom-full', 'left-full');
-      break;
-    case 'bottomleft':
-      placement = cn('top-full', 'right-full');
-      break;
-    case 'bottomright':
-      placement = cn('top-full', 'left-full');
-      break;
-    default:
-      placement = cn('top-full', 'right-full');
-      break;
-    // throw new Error("Invalid placement value");
-  }
-  return placement;
-};

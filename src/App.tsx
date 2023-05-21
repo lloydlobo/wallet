@@ -26,6 +26,7 @@ import {
   Accessor,
   Component,
   createEffect,
+  createResource,
   createSignal,
   For,
   onCleanup,
@@ -49,6 +50,9 @@ const App: Component = () => {
   const [isFormOpen, setIsFormOpen] = createSignal<boolean>(false);
   const [isAsideOpen, setIsAsideOpen] = createSignal<boolean>(true);
   const [isItemModalOpen, setIsItemModalOpen] = createSignal<boolean>(false); // Child modal of each list item prop drilled.
+
+  const [userId, setUserId] = createSignal();
+  const [user, { mutate, refetch }] = createResource(userId, fetchUser);
 
   let asideOverlayRef: HTMLDivElement | undefined;
 
@@ -172,20 +176,33 @@ const App: Component = () => {
       <div class="relative">
         <Aside isAsideOpen={isAsideOpen()} ref={asideOverlayRef} />
       </div>
+      <div class="mx-auto absolute z-20 left-1/2 right-1/2 top-4">
+        <Button variant={"ghost"} withClass={"border"} onClick={ev => {
+          ev.preventDefault()
+        }}>Search</Button>
+      </div>
+
+
+      <dialog class="bg-card/50 backdrop-blur border rounded-xl absolute w-full h-full">
+        <form action="" method="dialog">
+          <input type="text" onInput={ev => {
+            ev.preventDefault();//use debounce here.  
+            setUserId(ev.currentTarget.value);
+          }} />
+        </form>
+      </dialog>
 
       {/* TODO: Style scroll bar from App.module.css */}
       <main
-        class={`${styles.workWindow} ${
-          isAsideOpen() ? 'md:ms-[233px]' : ''
-        } md:mt-8! flex-1 flex-grow overflow-y-auto bg-muted px-2 pt-6 md:mx-16 md:rounded-t-3xl md:px-6`}
+        class={`${styles.workWindow} ${isAsideOpen() ? 'md:ms-[233px]' : ''
+          } md:mt-8! flex-1 flex-grow overflow-y-auto bg-muted px-2 pt-6 md:mx-16 md:rounded-t-3xl md:px-6`}
       >
         <Workspace groupedState={groupedState()} setIsItemModalOpen={setIsItemModalOpen} />
       </main>
 
       <footer
-        class={`${
-          isAsideOpen() ? 'md:ms-[233px]' : ''
-        } bg-muted px-8 pb-2 md:mx-16 md:mb-6 md:rounded-b-3xl`}
+        class={`${isAsideOpen() ? 'md:ms-[233px]' : ''
+          } bg-muted px-8 pb-2 md:mx-16 md:mb-6 md:rounded-b-3xl`}
       >
         {/* TODO: Call the setter state function before passing them as props. */}
         <FormCreateExpense
@@ -226,14 +243,14 @@ type WorkspaceProps = {
 function Workspace(props: WorkspaceProps) {
   // Add your additional props here
   type SkeletonSectionProps = JSX.HTMLAttributes<HTMLElement> & {
-    className?: string;
+    withClass?: string;
   };
 
   const SkeletonSection = (props: SkeletonSectionProps): JSX.Element => (
     <section
       class={cn(
         'justify-center! mx-auto flex items-center space-x-4 rounded-xl bg-card p-6 transition-all',
-        props.className
+        props.withClass
       )}
       style={{ 'padding-block': '2rem' }}
       {...props}
@@ -250,7 +267,7 @@ function Workspace(props: WorkspaceProps) {
     <Show
       when={props.groupedState}
       fallback={
-        <For each={Array.from({ length: 4 })}>{(_) => <SkeletonSection className="mb-2" />}</For>
+        <For each={Array.from({ length: 4 })}>{(_) => <SkeletonSection withClass="mb-2" />}</For>
       }
     >
       {/* TODO:Use zod to validate or use better types. */}
@@ -400,13 +417,12 @@ function Aside(props: AsideProps): JSX.Element {
       <div
         ref={props.ref}
         aria-label="aside-backdrop"
-        class={`${
-          props.isAsideOpen
-            ? cn(
-                `${styles.open} opacity-70 blur-none transition-all duration-150 delay-0  ease-linear`
-              )
-            : '-translate-x-full opacity-0 blur-2xl transition-all duration-100 delay-0  '
-        } ease absolute inset-0 -z-10 h-screen w-screen bg-muted/70 bg-blend-overlay md:hidden`}
+        class={`${props.isAsideOpen
+          ? cn(
+            `${styles.open} opacity-70 blur-none transition-all duration-150 delay-0  ease-linear`
+          )
+          : '-translate-x-full opacity-0 blur-2xl transition-all duration-100 delay-0  '
+          } ease absolute inset-0 -z-10 h-screen w-screen bg-muted/70 bg-blend-overlay md:hidden`}
       />
 
       {/* Sidebar Content */}
@@ -524,7 +540,8 @@ function Header(props: HeaderProps): JSX.Element {
         <div class="flex place-content-center items-center justify-center gap-4">
           <button
             type="button"
-            onClick={props.toggleSidebar}
+            // eslint-disable-next-line no-unused-vars
+            onClick={_ev => props.toggleSidebar()}
             title="Main Menu\nCtrl-Shift-E"
             class="z-10 grid place-self-center border border-transparent"
           >
@@ -582,7 +599,7 @@ function Header(props: HeaderProps): JSX.Element {
                 variant={'link'}
               >
                 <Tooltip
-                  className="sr-only translate-x-8 translate-y-2"
+                  withClass="sr-only translate-x-8 translate-y-2"
                   text="Login"
                   transition={'default'}
                 >
@@ -598,10 +615,10 @@ function Header(props: HeaderProps): JSX.Element {
               aria-label="User Menu"
               onClick={onLogoutClick}
               type="button"
-              className="transition-all duration-100 ease-out [&_svg]:hover:outline"
+              withClass="transition-all duration-100 ease-out [&_svg]:hover:outline"
             >
               <Tooltip
-                className="translate-x-8 translate-y-2"
+                withClass="translate-x-8 translate-y-2"
                 transition={'default'}
                 text={(() => {
                   const username = 'User';
@@ -632,12 +649,12 @@ async function fetchUser(id: unknown) {
 
 const ErrorMessage = (props: {
   error:
-    | number
-    | boolean
-    | Node
-    | JSX.ArrayElement
-    | JSX.FunctionElement
-    | (string & {})
-    | null
-    | undefined;
+  | number
+  | boolean
+  | Node
+  | JSX.ArrayElement
+  | JSX.FunctionElement
+  | (string & {})
+  | null
+  | undefined;
 }) => <span class="error-message">{props.error}</span>;

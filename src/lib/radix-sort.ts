@@ -10,8 +10,14 @@
  *   O(n logn) to O(kn), which is a significant improvement if the number of items is large.
  */
 
-import { Ordering } from '@/lib/enums';
+// import { Ordering } from '@/lib/enums';
 import { TDatabaseExpense as TRowExpense } from '@/lib/types-supabase';
+export enum Ordering {
+  Less = 'Less',
+  Greater = 'Greater',
+  Equal = 'Equal',
+  // None,
+}
 
 /**
  * Sorts the items based on their timestamps using the radix sort algorithm.

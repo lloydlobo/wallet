@@ -11,20 +11,20 @@ type CounterProps = {
   }>;
 };
 
-export function Counter({ appState, setAppState }: CounterProps): JSX.Element {
+export function Counter(props: CounterProps): JSX.Element {
   const [click, setClick] = createSignal(0);
 
   const onClickAdd = (ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }) => {
     ev.preventDefault();
     setClick(click() + 1);
-    setAppState({ ...appState(), count: appState().count + 1 });
+    props.setAppState({ ...props.appState(), count: props.appState().count + 1 });
   };
   const onClickSubtract = (
     ev: MouseEvent & { currentTarget: HTMLButtonElement; target: Element }
   ) => {
     ev.preventDefault();
     setClick(click() + 1);
-    setAppState({ ...appState(), count: appState().count - 1 });
+    props.setAppState({ ...props.appState(), count: props.appState().count - 1 });
   };
 
   // onCleanup - run an effect once before the reactive scope is disposed
@@ -33,11 +33,11 @@ export function Counter({ appState, setAppState }: CounterProps): JSX.Element {
   return (
     <>
       <div>{click()}</div>
-      <div>{appState().count}</div>
-      <button type="button" onclick={onClickAdd}>
+      <div>{props.appState().count}</div>
+      <button type="button" onClick={onClickAdd}>
         +
       </button>
-      <button type="button" onclick={onClickSubtract}>
+      <button type="button" onClick={onClickSubtract}>
         -
       </button>
     </>

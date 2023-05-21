@@ -1,7 +1,7 @@
 export enum Ordering {
-  Less,
-  Greater,
-  Equal,
+  Less = 'Less',
+  Greater = 'Greater',
+  Equal = 'Equal',
   // None,
 }
 

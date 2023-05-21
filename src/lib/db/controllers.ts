@@ -3,8 +3,10 @@ import { supabase } from '../supabase-client';
 import { TDatabaseExpense, TUpdateExpense } from '../types-supabase';
 
 export async function getDB(): Promise<TDatabaseExpense[] | null | undefined> {
+  console.log("getDB called");
   try {
     const { data } = await supabase.from(Databases.DB_NAME_EXPENSES).select();
+    console.log(data)
     return data as TDatabaseExpense[];
   } catch (err) {
     console.error(err);

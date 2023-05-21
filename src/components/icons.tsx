@@ -19,7 +19,7 @@ export function UserIcon(props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<S
       stroke-linejoin="round"
       class="lucide lucide-user-circle-2"
       data-darkreader-inline-stroke=""
-      style="--darkreader-inline-stroke:currentColor;"
+      style={{ '--darkreader-inline-stroke': 'currentColor' }}
       {...props}
     >
       <path d="M18 20a6 6 0 0 0-12 0" />
@@ -90,7 +90,7 @@ export function PlusIcon(props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<S
       stroke-linejoin="round"
       class="lucide lucide-plus"
       data-darkreader-inline-stroke=""
-      style="--darkreader-inline-stroke:currentColor;"
+      style={{ '--darkreader-inline-stroke': 'currentColor' }}
       {...props}
     >
       <title class="sr-only">PlusIcon</title>
@@ -114,7 +114,7 @@ export function CrossIcon(props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<
       stroke-linejoin="round"
       class="lucide lucide-x"
       data-darkreader-inline-stroke=""
-      style="--darkreader-inline-stroke:currentColor;"
+      style={{ '--darkreader-inline-stroke': 'currentColor' }}
       {...props}
     >
       <title class="sr-only">CrossIcon</title>
@@ -138,7 +138,7 @@ export function SunIcon(props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<SV
       stroke-linejoin="round"
       class="lucide lucide-sun-medium"
       data-darkreader-inline-stroke=""
-      style="--darkreader-inline-stroke:currentColor;"
+      style={{ '--darkreader-inline-stroke': 'currentColor' }}
       {...props}
     >
       <title class="sr-only">SunIcon</title>
@@ -168,7 +168,7 @@ export function MoonIcon(props: JSX.IntrinsicAttributes & JSX.SvgSVGAttributes<S
       stroke-linejoin="round"
       class="lucide lucide-moon-star"
       data-darkreader-inline-stroke=""
-      style="--darkreader-inline-stroke:currentColor;"
+      style={{ '--darkreader-inline-stroke': 'currentColor' }}
       {...props}
     >
       <title class="sr-only">MoonIcon</title>
@@ -195,7 +195,7 @@ export function HamburgerIcon(
       stroke-linejoin="round"
       class="lucide lucide-menu"
       data-darkreader-inline-stroke=""
-      style="--darkreader-inline-stroke:currentColor;"
+      style={{ '--darkreader-inline-stroke': 'currentColor' }}
       {...props}
     >
       <title class="sr-only">HamburgerIcon</title>
@@ -220,7 +220,7 @@ export function ActivityIcon(props: JSX.IntrinsicAttributes & JSX.SvgSVGAttribut
       stroke-linejoin="round"
       class="lucide lucide-activity"
       data-darkreader-inline-stroke=""
-      style="--darkreader-inline-stroke:currentColor;"
+      style={{ '--darkreader-inline-stroke': 'currentColor' }}
       {...props}
     >
       <title class="sr-only">ActivityIcon</title>
@@ -243,7 +243,7 @@ export function SettingsIcon(props: JSX.IntrinsicAttributes & JSX.SvgSVGAttribut
       stroke-linejoin="round"
       class="lucide lucide-settings"
       data-darkreader-inline-stroke=""
-      style="--darkreader-inline-stroke:currentColor;"
+      style={{ '--darkreader-inline-stroke': 'currentColor' }}
       {...props}
     >
       <title class="sr-only">SettingsIcon</title>

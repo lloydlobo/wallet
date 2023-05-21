@@ -12,4 +12,5 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
   );
 }
 
+// rome-ignore lint/style/noNonNullAssertion: forbidden non-null assertion.
 render(() => <App />, root!);

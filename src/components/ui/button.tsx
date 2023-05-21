@@ -1,5 +1,5 @@
 import { cva, VariantProps } from 'class-variance-authority';
-import { Component, FlowComponent, Show } from 'solid-js';
+import { Show } from 'solid-js';
 import { JSX } from 'solid-js/jsx-runtime';
 
 import { cn } from '@/lib/cn';
@@ -31,11 +31,11 @@ const buttonVariants = cva(
 
 export interface ButtonProps
   extends JSX.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  VariantProps<typeof buttonVariants> {
   /** Optional reference to the button element. */
   ref?: HTMLButtonElement | undefined;
-  /** Custom class to append to the base `class` styling. */
-  className?: string;
+  /** Custom class to append to the base `class` styling. Note: `class` will overide all default classes. */
+  withClass?: string;
   /** Sets the asChild parameter and nest the link component. */
   asChild?: boolean;
   // Add your additional props here...
@@ -86,8 +86,7 @@ const Button = (props: ButtonProps) => {
               buttonVariants({
                 variant: props.variant,
                 size: props.size,
-                className: props.className,
-              })
+              }), props.withClass
             )}
             {...props}
           >
@@ -99,7 +98,7 @@ const Button = (props: ButtonProps) => {
           role={props.role ?? 'none'}
           type={props.type ?? 'button'}
           class={cn(
-            buttonVariants({ variant: props.variant, size: props.size, className: props.className })
+            buttonVariants({ variant: props.variant, size: props.size, }), props.withClass
           )}
           {...props}
         >

@@ -180,7 +180,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
                 autofocus={true}
                 required
                 id="formName"
-                className="border-blue-400"
+                withClass="border-blue-400"
                 value={formStore.name} // value={formStore.name}
                 onChange={updateFormField('name')} // use onChange for less control on reactivity or more performance.
               />
@@ -192,7 +192,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
                 class="form-input"
                 required
                 value={formStore.amount}
-                className="font-mono"
+                withClass="font-mono"
               />
               <Textarea
                 onChange={updateFormField('description')}
@@ -226,7 +226,7 @@ export function ListItem(props: ListItemProps): JSX.Element {
                 </div>
                 <Input
                   type="checkbox"
-                  className="form-checkbox"
+                  withClass="form-checkbox"
                   onChange={updateFormField('is_cash')}
                   id="isCashCheckbox"
                   checked={formStore.is_cash}

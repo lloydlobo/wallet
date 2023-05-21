@@ -77,21 +77,22 @@ const Header = () => {
   };
 
   return (
-    <header>
-      <h1>My App</h1>
+    <header class="overflow-clip">
       <Show when={userSession()}>
-        <div>
+        <div class="absolute">
           <img src={userSession()?.user.avatar} alt="User Avatar" />
           <p>{userSession()?.user.email}</p>
           <button type="button" onClick={handleLogout}>
-            Logout
+            LocalLogout
           </button>
         </div>
       </Show>
       <Show when={!userSession()}>
-        <button type="button" onClick={handleLogin}>
-          Login
-        </button>
+        <div class="absolute">
+          <button type="button" onClick={handleLogin}>
+            LocalLogin
+          </button>
+        </div>
       </Show>
     </header>
   );
