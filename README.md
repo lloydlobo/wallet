@@ -1,4 +1,4 @@
-<h1>paisa</h1>
+<h1>wallet</h1>
 
 ## Table Of Contents
 
